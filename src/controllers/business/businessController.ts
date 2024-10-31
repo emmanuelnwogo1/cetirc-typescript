@@ -29,7 +29,7 @@ export const nearbyBusinessesController = async (req: Request, res: Response): P
 };
 
 export const businessRegisterController = async (req: Request, res: Response): Promise<void> => {
-    //try {
+    try {
         const businessProfile = await registerBusiness(req.body);
 
         // Generate the access and refresh tokens
@@ -55,13 +55,13 @@ export const businessRegisterController = async (req: Request, res: Response): P
                 access: accessToken,
             },
         });
-    // } catch (error) {
-    //     console.error('Registration error:', error);
-    //     res.status(400).json({
-    //         status: 'failed',
-    //         message: 'Error during registration.',
-    //         data: {},
-    //     });
-    // }
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(400).json({
+            status: 'failed',
+            message: 'Error during registration.',
+            data: {},
+        });
+    }
 }
 
