@@ -8,7 +8,7 @@ import {
     AllowNull,
   } from 'sequelize-typescript';
   
-  @Table
+  @Table({ tableName: 'auth_user', timestamps: false })
   export class User extends Model<User> {
     @PrimaryKey
     @AutoIncrement
@@ -29,30 +29,10 @@ import {
   
     @AllowNull(true)
     @Column(DataType.STRING)
-    fullName?: string;
-  
+    first_name?: string;
+
     @AllowNull(true)
     @Column(DataType.STRING)
-    phoneNumber?: string;
-  
-    @AllowNull(true)
-    @Column(DataType.STRING)
-    userType?: string;
-  
-    @AllowNull(true)
-    @Column(DataType.STRING)
-    profilePicture?: string;
-  
-    @AllowNull(true)
-    @Column(DataType.STRING)
-    language?: string;
-  
-    @AllowNull(true)
-    @Column(DataType.BOOLEAN)
-    notificationEmail?: boolean;
-  
-    @AllowNull(true)
-    @Column(DataType.BOOLEAN)
-    notificationSms?: boolean;
+    last_name?: string;
   }
   

@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 export class AuthService {
   async loginUser(email: string, password: string) {
     const user = await User.findOne({ where: { email } });
+    console.log(user, email);
 
     if (!user) {
       throw new Error('User not found');
@@ -28,18 +29,18 @@ export class AuthService {
         user: {
           userId: user.id,
           username: user.username,
-          fullName: user.fullName,
+          fullName: user.first_name! + user.last_name!,
           email: user.email,
-          phoneNumber: user.phoneNumber || 'Not Provided',
-          userType: user.userType || 'personal',
-          profilePicture: user.profilePicture,
+          phoneNumber: 'Not Provided',
+          userType: 'personal', // TODO make profile picture dynamic
+          profilePicture: 'https://cetircstorage.s3.amazonaws.com/profile_images/scaled_1000025451.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA6GBMFUGOQN4ATMD4%2F20241031%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20241031T045614Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=5f3760236199835aaf4fab494fa83159b723003281090b6a87ef90a176642a66',
           token,
           roles: ['user'],
           preferences: {
-            language: user.language || 'en',
+            language: 'en',
             notifications: {
-              email: user.notificationEmail || false,
-              sms: user.notificationSms || false,
+              email: true,
+              sms: false,
             },
           },
         },
