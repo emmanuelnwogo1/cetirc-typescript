@@ -102,4 +102,10 @@ export class BusinessProfile extends Model<BusinessProfile> {
     @AllowNull(true)
     @Column(DataType.STRING(100))
     image?: string;
+
+    toJSON() {
+        const attributes = { ...this.get() };
+        delete attributes.password; // Exclude password
+        return attributes;
+    };
 }

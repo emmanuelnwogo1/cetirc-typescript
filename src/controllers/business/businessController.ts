@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { getNearbyBusinesses } from '../../services/business/businessService';
-import { registerBusiness } from '../../services/business/BusinessRegisterService';
+import { getNearbyBusinesses, registerBusiness, updateBusinessProfile } from '../../services/business/businessService';
 import jwt from 'jsonwebtoken';
 
 export const nearbyBusinessesController = async (req: Request, res: Response): Promise<void> => {
@@ -61,6 +60,28 @@ export const businessRegisterController = async (req: Request, res: Response): P
             status: 'failed',
             message: 'Error during registration.',
             data: {},
+        });
+    }
+}
+
+export const updateBusinessProfileController = async (req: Request, res: Response) => {
+    const businessId = parseInt(req.params.business_id, 10);
+    const data = req.body;
+
+    try {
+        const updatedProfile = await updateBusinessProfile(businessId, data);
+
+        res.status(200).json({
+            status: 'success',
+            message: 'Profile updated successfully.',
+            data: updatedProfile
+        });
+    } catch (error: any) {
+        console.error("Update failed:", error);
+        res.status(error.message === "Business profile not found." ? 404 : 400).json({
+            status: 'failed',
+            message: error.message,
+            data: {}
         });
     }
 }
