@@ -4,6 +4,7 @@ import { BusinessProfile } from '../models/BusinessProfile';
 import { BusinessDashboard } from '../models/BusinessDashboard';
 import { PalmShare } from '../models/PalmShare';
 import { TransactionHistory } from '../models/TransactionHistory';
+import { PasswordResetRequest } from '../models/PasswordResetRequest';
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -12,7 +13,7 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  models: [User, BusinessProfile, BusinessDashboard, PalmShare, TransactionHistory],
+  models: [User, BusinessProfile, BusinessDashboard, PalmShare, TransactionHistory, PasswordResetRequest],
 });
 
 export default sequelize;
