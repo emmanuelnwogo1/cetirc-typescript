@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getBusinessLocations, getNearbyBusinesses, registerBusiness, updateBusinessProfile } from '../../services/business/businessService';
+import { getBusinessLocations, getNearbyBusinesses, getNearestBusinesses, registerBusiness, updateBusinessProfile } from '../../services/business/businessService';
 import jwt from 'jsonwebtoken';
 
 export const nearbyBusinessesController = async (req: Request, res: Response): Promise<void> => {
@@ -92,6 +92,24 @@ export const getBusinessLocation = async (req: Request, res: Response) => {
         res.status(result.status === 'success' ? 200 : 404).json(result);
     } catch (error) {
         res.status(500).json({ status: 'failed', message: 'No valid addresses found or geocoding failed for all addresses.', data: {} });
+    }
+}
+
+export const getNearestBusinessesController = async (req: Request, res: Response) => {
+    const location = req.body.location;
+    if (!location || location.latitude == null || location.longitude == null) {
+        res.status(400).json({ status: 'failed', message: 'Latitude and longitude are required.', data: {} });
+    }
+
+    try {
+        const results = await getNearestBusinesses(location.latitude, location.longitude);
+        res.status(200).json({
+            status: 'success',
+            message: 'Nearest businesses retrieved successfully.',
+            data: results
+        });
+    } catch (error) {
+        res.status(500).json({ status: 'failed', message: 'Failed to get nearest businesses.', data: {} });
     }
 }
 
