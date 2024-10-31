@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getPalmShareMembers, savePalmShareSettings } from '../services/palmShareService';
+import { getPalmShareMembers, savePalmShareSettings, updatePalmShareMember } from '../services/palmShareService';
 import { User } from '../models/User';
 
 export const palmShareController = async (req: Request, res: Response) => {
@@ -41,6 +41,28 @@ export const palmShareMemmebersController = async (req: Request, res: Response) 
             status: 'success',
             message: 'PalmShare members retrieved successfully.',
             data: members
+        });
+    } catch (error: any) {
+        res.status(404).json({
+            status: 'failed',
+            message: error.message,
+            data: {}
+        });
+    }
+}
+
+export const palmShareUpdateMemberController = async (req: Request, res: Response) => {
+    const allowedUsername = req.params.allowed_username;
+    const user = await User.findOne(req.user.id);
+
+    try {
+        const updateData = req.body;
+        const updatedMember = await updatePalmShareMember(allowedUsername, user, updateData);
+        
+        res.status(200).json({
+            status: 'success',
+            message: 'PalmShare member updated successfully.',
+            data: updatedMember
         });
     } catch (error: any) {
         res.status(404).json({

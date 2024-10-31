@@ -51,3 +51,32 @@ export const getPalmShareMembers = async (username: string) => {
 
     return palmshareMembers;
 }
+
+export const updatePalmShareMember = async (allowedUsername: string, user: any, updateData: any) => {
+    
+    const userProfile = await User.findOne({ where: { username: user.username } });
+    if (!userProfile) {
+        throw new Error('User profile not found');
+    }
+
+    const allowedUser = await User.findOne({ where: { username: allowedUsername } });
+    if (!allowedUser) {
+        throw new Error('Allowed user does not exist');
+    }
+
+    // Find the PalmShare member
+    const palmShareMember = await PalmShare.findOne({
+        where: {
+            owner_id: userProfile.id,
+            allowed_user_id: allowedUser.id
+        }
+    });
+
+    if (!palmShareMember) {
+        throw new Error('PalmShare member does not exist');
+    }
+
+    await palmShareMember.update(updateData);
+
+    return palmShareMember;
+}
