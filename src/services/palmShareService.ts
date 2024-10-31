@@ -35,3 +35,19 @@ export const savePalmShareSettings = async (ownerId: number, allowed_username: s
         }
     };
 };
+
+
+export const getPalmShareMembers = async (username: string) => {
+    const userProfile = await User.findOne({ where: { username } });
+    
+    if (!userProfile) {
+        throw new Error('User profile not found');
+    }
+
+    // Filter PalmShare members based on the user profile
+    const palmshareMembers = await PalmShare.findAll({
+        where: { owner_id: userProfile.id }
+    });
+
+    return palmshareMembers;
+}

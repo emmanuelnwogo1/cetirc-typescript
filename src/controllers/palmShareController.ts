@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { savePalmShareSettings } from '../services/palmShareService';
+import { getPalmShareMembers, savePalmShareSettings } from '../services/palmShareService';
+import { User } from '../models/User';
 
 export const palmShareController = async (req: Request, res: Response) => {
     const { allowed_username, max_amount } = req.body;
@@ -30,3 +31,22 @@ export const palmShareController = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const palmShareMemmebersController = async (req: Request, res: Response) => {
+    try {
+        const user = await User.findOne(req.user.id);
+        const members = await getPalmShareMembers(user.username);
+        
+        res.status(200).json({
+            status: 'success',
+            message: 'PalmShare members retrieved successfully.',
+            data: members
+        });
+    } catch (error: any) {
+        res.status(404).json({
+            status: 'failed',
+            message: error.message,
+            data: {}
+        });
+    }
+}
