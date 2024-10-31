@@ -5,7 +5,6 @@ import bcrypt from 'bcrypt';
 export class AuthService {
   async loginUser(email: string, password: string) {
     const user = await User.findOne({ where: { email } });
-    console.log(user, email);
 
     if (!user) {
       throw new Error('User not found');

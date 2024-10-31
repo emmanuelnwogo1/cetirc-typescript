@@ -1,7 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import { User } from '../models/User';
+import { BusinessProfile } from '../models/BusinessProfile';
 
-console.log('Database:', process.env.DB_NAME);
 const sequelize = new Sequelize({
   dialect: 'postgres',
   host: process.env.DB_HOST,
@@ -9,7 +9,7 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  models: [User],
+  models: [User, BusinessProfile],
 });
 
 export default sequelize;
