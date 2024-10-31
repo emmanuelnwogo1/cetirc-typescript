@@ -68,3 +68,35 @@ export const registerBusiness = async (data: any) => {
         throw error;
     }
 };
+
+export const getBusinessLocations = async () => {
+    const businesses = await BusinessProfile.findAll();
+    const results: any[] = [];
+
+    for (const business of businesses) {
+        const address = `${business.address}, ${business.city}, ${business.state} ${business.zip_code}`;
+        const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+
+        try {
+            const response = await axios.get(geocodingUrl);
+            const data = response.data;
+
+            if (data.status === 'OK') {
+                const location = data.results[0].geometry.location;
+                results.push({
+                    name: business.name,
+                    device_id: business.device_id,
+                    location
+                });
+            } else {
+                throw new Error(`Failed to geocode address: ${address}, status: ${data.status}`);
+            }
+        } catch (error: any) {
+            throw new Error(`Error while geocoding address: ${address}, error: ${error.message}`);
+        }
+    }
+
+    return results.length > 0
+        ? { status: 'success', message: 'Operation completed successfully.', data: results }
+        : { status: 'failed', message: 'No valid addresses found or geocoding failed for all addresses', data: {} };
+}
