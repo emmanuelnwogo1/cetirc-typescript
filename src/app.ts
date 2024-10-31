@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import sequelize from './config/database';
 import businessRoutes from './routes/businessRoutes';
 import businessDashboardRoutes from './routes/businessDashboardRoutes';
+import palmShareRoutes from './routes/palmShareRoutes';
 import './types/global';
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/api', authRoutes);
 app.use('/api', businessRoutes);
 app.use('/api', businessDashboardRoutes);
+app.use('/api', palmShareRoutes);
 
 sequelize.sync();
 export default app;

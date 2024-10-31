@@ -34,5 +34,5 @@ import {
     @AllowNull(true)
     @Column(DataType.STRING)
     last_name?: string;
-  }
+}
   

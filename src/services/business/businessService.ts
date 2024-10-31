@@ -44,7 +44,7 @@ export const updateBusinessProfile = async (businessId: number, data: any) =>  {
     }
 
     await businessProfile.update(data);
-    return businessProfile.toJSON(); // Directly return the updated data object
+    return businessProfile.toJSON();
 };
 
 export const registerBusiness = async (data: any) => {
