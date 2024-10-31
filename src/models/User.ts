@@ -6,6 +6,7 @@ import {
     AutoIncrement,
     DataType,
     AllowNull,
+    Default,
   } from 'sequelize-typescript';
   
   @Table({ tableName: 'auth_user', timestamps: false })
@@ -34,5 +35,24 @@ import {
     @AllowNull(true)
     @Column(DataType.STRING)
     last_name?: string;
+
+    @AllowNull(false)
+    @Default(false)
+    @Column(DataType.BOOLEAN)
+    is_superuser!: boolean;
+
+    @AllowNull(false)
+    @Default(false)
+    @Column(DataType.BOOLEAN)
+    is_staff!: boolean;
+
+    @AllowNull(false)
+    @Default(false)
+    @Column(DataType.BOOLEAN)
+    is_active!: boolean;
+
+    @AllowNull(false)
+    @Column(DataType.DATE)
+    date_joined!: Date;
 }
   
