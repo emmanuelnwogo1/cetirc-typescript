@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { getNearbyBusinesses } from '../../services/business/businessService';
+import { registerBusiness } from '../../services/business/BusinessRegisterService';
+import jwt from 'jsonwebtoken';
 
 export const nearbyBusinessesController = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -25,3 +27,41 @@ export const nearbyBusinessesController = async (req: Request, res: Response): P
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+export const businessRegisterController = async (req: Request, res: Response): Promise<void> => {
+    //try {
+        const businessProfile = await registerBusiness(req.body);
+
+        // Generate the access and refresh tokens
+        const accessToken = jwt.sign(
+            { id: businessProfile.id, email: businessProfile.email },
+            process.env.JWT_SECRET || 'default_secret',
+            { expiresIn: '24h' }
+        );
+
+        const refreshToken = jwt.sign(
+            { id: businessProfile.id, email: businessProfile.email },
+            process.env.JWT_REFRESH_SECRET || 'default_refresh_secret',
+            { expiresIn: '7d' } // Longer expiration for refresh token
+        );
+
+        res.status(201).json({
+            status: 'success',
+            message: 'Business registered successfully.',
+            data: {
+                business_id: businessProfile.id,
+                withdraw_code: businessProfile.withdraw_code,
+                refresh: refreshToken,
+                access: accessToken,
+            },
+        });
+    // } catch (error) {
+    //     console.error('Registration error:', error);
+    //     res.status(400).json({
+    //         status: 'failed',
+    //         message: 'Error during registration.',
+    //         data: {},
+    //     });
+    // }
+}
+
