@@ -54,6 +54,21 @@ class UserSmartLockController {
           });
         }
     }
+
+    async removeUserFromSmartLockGroup(req: Request, res: Response) {
+        const { user_id, smart_lock_device_id } = req.body;
+    
+        try {
+          const result = await userSmartLockService.removeUserFromSmartLockGroup(user_id, smart_lock_device_id);
+          res.status(200).json(result);
+        } catch (error: any) {
+          res.status(400).json({
+            status: 'failed',
+            message: error.message,
+            data: {},
+          });
+        }
+    }
 }
 
 export default new UserSmartLockController();

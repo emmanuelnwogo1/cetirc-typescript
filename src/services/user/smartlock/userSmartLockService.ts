@@ -1,3 +1,5 @@
+import { BusinessProfile } from "../../../models/BusinessProfile";
+import { BusinessSmartLock } from "../../../models/BusinessSmartLock";
 import { SmartLock } from "../../../models/SmartLock";
 import { SmartLockGroup } from "../../../models/SmartLockGroup";
 import { UserSmartLockAccess } from "../../../models/UserSmartLockAccess";
@@ -11,7 +13,6 @@ class UserSmartLockService {
             throw new Error('Smart lock not found.');
         }
 
-        // Find or create the SmartLockGroup
         var smartLockGroup = await SmartLockGroup.findOne({ where: { name: groupName } });
 
         if (!smartLockGroup) {
@@ -21,13 +22,11 @@ class UserSmartLockService {
             } as SmartLockGroup);
         }
 
-        // Assign the SmartLock to the group if it isn't already
         if (smartLock.group_id !== smartLockGroup.id) {
             smartLock.group_id = smartLockGroup.id;
             await smartLock.save();
         }
 
-        // Check if the user already has access to the SmartLock
         const existingAccess = await UserSmartLockAccess.findOne({
             where: { user_id: userId, smart_lock_id: smartLock.id }
         });
@@ -36,7 +35,6 @@ class UserSmartLockService {
             throw new Error('User already has access to this smart lock.');
         }
 
-        // Grant access to the user for the smart lock
         await UserSmartLockAccess.create({
             smart_lock_id: smartLock.id,
             user_id: userId,
@@ -55,6 +53,38 @@ class UserSmartLockService {
             }
         };
     }
+
+    async removeUserFromSmartLockGroup(userId: number, smartLockDeviceId: string) {
+        
+        const businessProfile = await BusinessProfile.findOne({ where: { user_id: userId } });
+        
+        if (!businessProfile) {
+            throw new Error('Business profile not found.');
+        }
+    
+        const smartLock = await SmartLock.findOne({ where: { device_id: smartLockDeviceId } });
+        if (!smartLock) {
+            throw new Error('Smart lock not found.');
+        }
+    
+        const businessSmartLocks = await BusinessSmartLock.findAll({ where: { business_profile_id: businessProfile.id } });
+        const isSmartLockAssociated = businessSmartLocks.some((businessSmartLock) => businessSmartLock.smart_lock_id === smartLock.id);
+        
+        if (!isSmartLockAssociated) {
+            throw new Error('Smart lock does not belong to your business.');
+        }
+    
+        const userSmartLockAccess = await UserSmartLockAccess.findOne({ where: { user_id: userId, smart_lock_id: smartLock.id } });
+        if (!userSmartLockAccess) {
+            throw new Error('User is not associated with this smart lock group.');
+        }
+    
+        await userSmartLockAccess.destroy();
+        return {
+            status: 'success',
+            message: 'User removed from smart lock group successfully.',
+        };
+    }    
 }
 
 export default new UserSmartLockService();
