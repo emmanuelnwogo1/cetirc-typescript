@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import userSmartLockService from '../../../services/user/smartlock/userSmartLockService';
 import { controlSmartLock } from '../../../services/user/smartlock/smartLockControlService';
+import { getUserSmartLockGroups } from '../../../services/user/smartlock/userSmartLockGroupService';
 
 class UserSmartLockController {
     
@@ -34,6 +35,21 @@ class UserSmartLockController {
           res.status(statusCode).json({
             status: 'failed',
             message: error.message,
+            data: {},
+          });
+        }
+    }
+
+    async getUserSmartLockGroupsController(req: Request, res: Response) {
+        const userId = req.user.id;
+    
+        try {
+          const result = await getUserSmartLockGroups(userId);
+          res.status(200).json(result);
+        } catch (error) {
+          res.status(500).json({
+            status: 'failed',
+            message: 'An error occurred while retrieving smart locks.',
             data: {},
           });
         }
