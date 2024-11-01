@@ -32,7 +32,7 @@ export class CardController {
         const data = req.body;
         console.log(userId);
     
-        const result = await new CardService().updateCard(cardId, data, userId);
+        const result = await cardService.updateCard(cardId, data, userId);
     
         if (result.status === "success") {
             res.status(200).json(result);
@@ -40,6 +40,20 @@ export class CardController {
             res.status(404).json(result);
         } else {
             res.status(400).json(result);
+        }
+    };
+
+    fetchUserCards = async (req: Request, res: Response) => {
+        const userId = req.user.id;
+    
+        const result = await cardService.getUserCards(userId);
+    
+        if (result.status === "success") {
+            res.status(200).json(result);
+        } else if (result.message === "User profile does not exist.") {
+            res.status(404).json(result);
+        } else {
+            res.status(500).json(result);
         }
     };
 }

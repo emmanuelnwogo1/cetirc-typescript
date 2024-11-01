@@ -1,5 +1,6 @@
 import { Card } from '../../models/Card';
 import { User } from '../../models/User';
+import { UserProfile } from '../../models/UserProfile';
 
 export class CardService {
     async addCard(user: any, cardData: any) {
@@ -46,4 +47,41 @@ export class CardService {
             };
         }
     }
+
+    getUserCards = async (userId: number) => {
+        try {
+            const userProfile = await UserProfile.findOne({ where: { id: userId } });
+    
+            if (!userProfile) {
+                return {
+                    status: "error",
+                    message: "User profile does not exist.",
+                    data: {}
+                };
+            }
+    
+            // Fetch cards associated with the user profile
+            const cards = await Card.findAll({ where: { user_profile_id: userId } });
+    
+            const cardData = cards.map(card => ({
+                id: card.id,
+                name: card.name,
+                card_number: card.card_number,
+                expiration_month_year: card.expiration_month_year,
+                cvv: card.cvv
+            }));
+    
+            return {
+                status: "success",
+                message: "Cards retrieved successfully.",
+                data: cardData
+            };
+        } catch (error) {
+            return {
+                status: "error",
+                message: "Failed to retrieve cards.",
+                data: error
+            };
+        }
+    };
 }
