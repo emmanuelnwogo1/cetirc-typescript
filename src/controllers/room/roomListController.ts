@@ -1,4 +1,4 @@
-import { getRoomsListByBusinessType } from "../../services/root/getRoomListService";
+import { getRoomsListByBusinessType } from "../../services/room/getRoomListService";
 import { Request, Response } from "express";
 
 export const roomListController = async (req: Request, res: Response) => {
