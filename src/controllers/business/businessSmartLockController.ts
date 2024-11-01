@@ -1,4 +1,5 @@
-import { getBusinessSmartLocks, signUpBusinessSmartLock } from "../../services/business/businessSmartLockService";
+import { User } from "../../models/User";
+import { getBusinessSmartLocks, grantSmartLockAccessToBusiness, signUpBusinessSmartLock } from "../../services/business/businessSmartLockService";
 import { Request, Response } from 'express';
 
 export const signUpBusinessSmartLockController = async (req: Request, res: Response) => {
@@ -36,6 +37,33 @@ export const fetchBusinessSmartLocks = async (req: Request, res: Response) => {
             status: 'failed',
             message: 'An error occurred while processing your request.',
             data: error.message,
+        });
+    }
+};
+
+export const grantSmartLockAccessToBusinessController = async (req: Request, res: Response) => {
+    const { businessType } = req.params;
+    const { username, device_id, period, room_id } = req.body;
+
+    try {
+        const user = await User.findOne({where: {id: req.user.id}})
+        const response = await grantSmartLockAccessToBusiness(
+            user,
+            username,
+            device_id,
+            period,
+            room_id,
+            businessType,
+            req.user.id
+        );
+
+        const statusCode = response.status === 'success' ? 201 : 400;
+        res.status(statusCode).json(response);
+    } catch (error) {
+        res.status(500).json({
+            status: 'failed',
+            message: 'An error occurred while granting access.',
+            data: {}
         });
     }
 };
