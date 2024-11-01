@@ -7,6 +7,9 @@ import { TransactionHistory } from '../models/TransactionHistory';
 import { PasswordResetRequest } from '../models/PasswordResetRequest';
 import { Card } from '../models/Card';
 import { UserProfile } from '../models/UserProfile';
+import { SmartLock } from '../models/SmartLock';
+import { SmartLockGroup } from '../models/SmartLockGroup';
+import { UserSmartLockAccess } from '../models/UserSmartLockAccess';
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -15,7 +18,10 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  models: [User, BusinessProfile, BusinessDashboard, PalmShare, TransactionHistory, PasswordResetRequest, Card, UserProfile],
+  models: [User, BusinessProfile, BusinessDashboard, PalmShare, TransactionHistory,
+        PasswordResetRequest, Card, UserProfile,
+        SmartLock, SmartLockGroup, UserSmartLockAccess
+    ],
 });
 
 export default sequelize;
