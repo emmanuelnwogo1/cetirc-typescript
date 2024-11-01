@@ -1,5 +1,5 @@
 import { User } from "../../models/User";
-import { getBusinessSmartLocks, grantSmartLockAccessToBusiness, signUpBusinessSmartLock } from "../../services/business/businessSmartLockService";
+import { addSmartLockService, getBusinessSmartLocks, grantSmartLockAccessToBusiness, signUpBusinessSmartLock } from "../../services/business/businessSmartLockService";
 import { Request, Response } from 'express';
 
 export const signUpBusinessSmartLockController = async (req: Request, res: Response) => {
@@ -63,6 +63,22 @@ export const grantSmartLockAccessToBusinessController = async (req: Request, res
         res.status(500).json({
             status: 'failed',
             message: 'An error occurred while granting access.',
+            data: {}
+        });
+    }
+};
+
+export const addSmartLockController = async (req: Request, res: Response) => {
+    try {
+        const { device_id, business_type } = req.body;
+        const userId = req.user.id;
+
+        const result = await addSmartLockService(device_id, business_type, userId);
+        res.status(result.statusCode).json(result.data);
+    } catch (error: any) {
+        res.status(404).json({
+            status: 'failed',
+            message: error.message || 'Failed to add smart lock.',
             data: {}
         });
     }

@@ -167,3 +167,82 @@ export const grantSmartLockAccessToBusiness = async (
         }
     };
 };
+
+export const addSmartLockService = async (device_id: string, business_type: string, userId: number) => {
+
+    const user: User | null = await User.findOne({ where: { id: userId } });
+    if (!user) {
+        return {
+            statusCode: 401,
+            data: {
+                status: 'UnAuthorized',
+                message: 'User does not exist.',
+                data: {}
+            }
+        };
+    }
+
+    const smartLockGroup = await SmartLockGroup.findOne({ where: { name: business_type } });
+    if (!smartLockGroup) {
+        return {
+            statusCode: 400,
+            data: {
+                status: 'failed',
+                message: 'Invalid input.',
+                data: { business_type: [`Smart lock group with name '${business_type}' does not exist.`] }
+            }
+        };
+    }
+
+    var smartLock = null;
+    try{
+        smartLock = await SmartLock.create({
+            id: 503,
+            device_id,
+            group_id: smartLockGroup.id,
+            created_at: new Date
+        } as SmartLock);
+    }catch(e: any){
+        throw new Error(e.message);
+    }
+
+    if(!smartLock){
+        return {
+            statusCode: 404,
+            data: {
+                status: 'failed',
+                message: 'Failed to create smart lock.',
+                data: {}
+            }
+        };
+    }
+
+
+    const businessProfile = await BusinessProfile.findOne({ where: { user_id: userId } });
+    if (businessProfile) {
+
+        await BusinessSmartLock.findOrCreate({
+            where: { id: 503, business_profile_id: businessProfile.id, smart_lock_id: smartLock.id }
+        });
+        return {
+            statusCode: 201,
+            data: {
+                status: 'success',
+                message: 'Smart lock added and associated with BusinessProfile successfully.',
+                data: smartLock
+            }
+        };
+    } else {
+        await UserSmartLockAccess.findOrCreate({
+            where: { user_id: userId, smart_lock_id: smartLock.id }
+        });
+        return {
+            statusCode: 201,
+            data: {
+                status: 'success',
+                message: 'Smart lock added and associated with UserSmartLockAccess successfully.',
+                data: smartLock
+            }
+        };
+    }
+};

@@ -21,13 +21,13 @@ export class SmartLock extends Model<SmartLock> {
     @Column(DataType.STRING)
     device_id!: string;
 
-    @AllowNull(false)
+    @AllowNull(true)
     @Column(DataType.STRING)
-    name!: string;
+    name?: string;
 
-    @AllowNull(false)
+    @AllowNull(true)
     @Column(DataType.DATE)
-    created_at!: Date;
+    created_at?: Date;
 
     @AllowNull(true)
     @ForeignKey(() => SmartLockGroup)
