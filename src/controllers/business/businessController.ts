@@ -41,7 +41,7 @@ export const businessRegisterController = async (req: Request, res: Response): P
         const refreshToken = jwt.sign(
             { id: businessProfile.id, email: businessProfile.email },
             process.env.JWT_REFRESH_SECRET || 'default_refresh_secret',
-            { expiresIn: '7d' } // Longer expiration for refresh token
+            { expiresIn: '7d' }
         );
 
         res.status(201).json({

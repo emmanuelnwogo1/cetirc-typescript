@@ -1,7 +1,8 @@
 import { User } from '../../models/User';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import bcrypt, { compare } from 'bcrypt';
 import { Op } from 'sequelize';
+import { BusinessProfile } from '../../models/BusinessProfile';
 
 export class AuthService {
   async loginUser(email: string, password: string) {
@@ -113,4 +114,54 @@ export class AuthService {
             }
         };
     }
+
+    businessLogin = async (email: string, password: string) => {
+        try {
+            const business = await BusinessProfile.findOne({ where: { email } });
+            
+            if (!business) {
+                throw new Error('Business profile does not exist.');
+            }
+    
+            const isPasswordValid = await compare(password, business.password!);
+            
+            if (!isPasswordValid) {
+                throw new Error('Invalid login credentials.');
+            }
+    
+            const accessToken = jwt.sign(
+                { userId: business.id },
+                process.env.JWT_SECRET || 'default_secret',
+                { expiresIn: '24h' }
+            );
+    
+            const profilePicture = business.image ? `${business.image}` : null;
+    
+            return {
+                status: 'success',
+                message: 'Login successful.',
+                data: {
+                    user: {
+                        business_id: business.id,
+                        username: business.name,
+                        fullName: business.name,
+                        email: business.email,
+                        userType: 'business',
+                        profilePicture: profilePicture,
+                        token: accessToken,
+                        roles: ['user'],
+                        preferences: {
+                            language: 'en',
+                            notifications: {
+                                email: true,
+                                sms: false,
+                            },
+                        },
+                    },
+                },
+            };
+        } catch (error) {
+            throw error;
+        }
+    };
 }
