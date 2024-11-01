@@ -25,4 +25,21 @@ export class CardController {
             });
         }
     }
+
+    editCard = async (req: Request, res: Response) => {
+        const cardId = parseInt(req.params.id);
+        const userId = req.user.id;
+        const data = req.body;
+        console.log(userId);
+    
+        const result = await new CardService().updateCard(cardId, data, userId);
+    
+        if (result.status === "success") {
+            res.status(200).json(result);
+        } else if (result.message === "Card not found.") {
+            res.status(404).json(result);
+        } else {
+            res.status(400).json(result);
+        }
+    };
 }

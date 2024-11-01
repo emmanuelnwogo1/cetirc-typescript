@@ -17,4 +17,33 @@ export class CardService {
 
         return newCard;
     }
+
+    updateCard = async (cardId: number, data: any, userId: number) => {
+        try {
+            const card = await Card.findOne({
+                where: { id: cardId, user_profile_id: userId }
+            });
+    
+            if (!card) {
+                return {
+                    status: "failed",
+                    message: "Card not found.",
+                    data: {}
+                };
+            }
+    
+            await card.update(data);
+            return {
+                status: "success",
+                message: "Card updated successfully.",
+                data: card
+            };
+        } catch (error) {
+            return {
+                status: "failed",
+                message: "Failed to update card.",
+                data: error
+            };
+        }
+    }
 }

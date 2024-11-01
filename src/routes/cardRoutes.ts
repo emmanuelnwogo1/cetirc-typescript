@@ -6,5 +6,6 @@ const router = Router();
 const cardController = new CardController();
 
 router.post('/cards/add', verifyToken, cardController.addCard);
+router.put('/cards/update/:id', verifyToken, cardController.editCard);
 
 export default router;
