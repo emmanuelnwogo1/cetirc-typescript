@@ -1,5 +1,6 @@
 import { PalmShare } from '../models/PalmShare';
 import { User } from '../models/User';
+import { UserProfile } from '../models/UserProfile';
 
 export const savePalmShareSettings = async (ownerId: number, allowed_username: string, max_amount: number) => {
     const allowedUser = await User.findOne({ where: { username: allowed_username } });
@@ -80,3 +81,32 @@ export const updatePalmShareMember = async (allowedUsername: string, user: any, 
 
     return palmShareMember;
 }
+
+export const deletePalmShareMember = async (allowedUsername: string, userId: number) => {
+    
+    const user = await User.findByPk(userId);
+    if (!user) throw new Error('User is not authenticated.');
+
+    const userProfile = await UserProfile.findOne({ where: { username_id: user.id } });
+    const allowedUser = await User.findOne({ where: { username: allowedUsername } });
+    
+    if (!userProfile || !allowedUser) {
+        throw new Error('PalmShare member does not exist.');
+    }
+
+    // Check for the PalmShare entry between these two users
+    const palmShareMember = await PalmShare.findOne({
+        where: { owner_id: userProfile.id, allowed_user_id: allowedUser.id },
+    });
+
+    if (!palmShareMember) throw new Error('PalmShare member does not exist.');
+
+    // Remove the PalmShare member
+    await palmShareMember.destroy();
+
+    return {
+        status: 'success',
+        message: 'PalmShare member removed successfully.',
+        data: {},
+    };
+};
