@@ -1,5 +1,3 @@
-// models/Transaction.ts
-
 import {
     Table,
     Column,
@@ -10,9 +8,10 @@ import {
     AllowNull,
     ForeignKey,
 } from 'sequelize-typescript';
-import { User } from './User'; // Adjust the import based on your user model
+import { User } from './User';
+import { BusinessProfile } from './BusinessProfile';
 
-@Table({ tableName: 'transactions', timestamps: false }) // Adjust table name if needed
+@Table({ tableName: 'transactions', timestamps: false })
 export class Transaction extends Model<Transaction> {
     @PrimaryKey
     @AutoIncrement
@@ -20,29 +19,29 @@ export class Transaction extends Model<Transaction> {
     id!: number;
 
     @AllowNull(false)
-    @Column(DataType.DECIMAL) // Assuming amount is a decimal; adjust if needed
+    @Column(DataType.DECIMAL)
     amount!: number;
 
     @AllowNull(false)
-    @Column(DataType.DATE) // Assuming transaction_date is a date
+    @Column(DataType.DATE)
     transactionDate!: Date;
 
     @AllowNull(false)
-    @Column(DataType.BOOLEAN) // Assuming success is a boolean
+    @Column(DataType.BOOLEAN)
     success!: boolean;
 
-    @ForeignKey(() => Business) // Assuming there's a Business model
+    @ForeignKey(() => BusinessProfile)
     @AllowNull(false)
     @Column(DataType.INTEGER)
-    businessId!: number;
+    business_id!: number;
 
-    @ForeignKey(() => User) // Assuming payer_user_id references User
+    @ForeignKey(() => User)
     @AllowNull(false)
     @Column(DataType.INTEGER)
-    payerUserId!: number;
+    payer_user_id!: number;
 
-    @ForeignKey(() => User) // Assuming user_id references User
+    @ForeignKey(() => User)
     @AllowNull(false)
     @Column(DataType.INTEGER)
-    userId!: number;
+    user_id!: number;
 }
