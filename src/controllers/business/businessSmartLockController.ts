@@ -1,4 +1,4 @@
-import { signUpBusinessSmartLock } from "../../services/business/businessSmartLockService";
+import { getBusinessSmartLocks, signUpBusinessSmartLock } from "../../services/business/businessSmartLockService";
 import { Request, Response } from 'express';
 
 export const signUpBusinessSmartLockController = async (req: Request, res: Response) => {
@@ -24,3 +24,18 @@ export const signUpBusinessSmartLockController = async (req: Request, res: Respo
       });
     }
 }
+
+export const fetchBusinessSmartLocks = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user.id;
+        const response = await getBusinessSmartLocks(userId);
+
+        res.status(response.status === 'success' ? 200 : 404).json(response);
+    } catch (error: any) {
+        res.status(500).json({
+            status: 'failed',
+            message: 'An error occurred while processing your request.',
+            data: error.message,
+        });
+    }
+};
