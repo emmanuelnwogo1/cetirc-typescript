@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import userSmartLockService from '../../../services/user/smartlock/userSmartLockService';
 import { controlSmartLock } from '../../../services/user/smartlock/smartLockControlService';
-import { getUserSmartLockGroups } from '../../../services/user/smartlock/userSmartLockGroupService';
+import { getUserSmartLockGroups, leaveSmartLockGroup } from '../../../services/user/smartlock/userSmartLockGroupService';
 
 class UserSmartLockController {
     
@@ -69,6 +69,23 @@ class UserSmartLockController {
           });
         }
     }
+
+    leaveSmartLockGroupController = async (req: Request, res: Response) => {
+        try {
+            const userId = req.user.id;
+            const { smart_lock_device_id } = req.body;
+    
+            const response = await leaveSmartLockGroup(userId, smart_lock_device_id);
+    
+            res.status(response.status === 'success' ? 200 : 404).json(response);
+        } catch (error: any) {
+            res.status(500).json({
+                status: 'failed',
+                message: 'An error occurred while processing your request.',
+                data: error.message,
+            });
+        }
+    };
 }
 
 export default new UserSmartLockController();

@@ -40,3 +40,36 @@ export const getUserSmartLockGroups = async (userId: number) => {
         };
     }
 };
+
+export const leaveSmartLockGroup = async (userId: number, smartLockDeviceId: string) => {
+    
+    const smartLock = await SmartLock.findOne({ where: { device_id: smartLockDeviceId } });
+    
+    if (!smartLock) {
+        return {
+            status: 'failed',
+            message: 'Smart lock not found.',
+            data: {}
+        };
+    }
+
+    const userSmartLockAccess = await UserSmartLockAccess.findOne({
+        where: { user_id: userId, smart_lock_id: smartLock.id }
+    });
+
+    if (!userSmartLockAccess) {
+        return {
+            status: 'failed',
+            message: 'You are not associated with this smart lock group.',
+            data: {}
+        };
+    }
+
+    await userSmartLockAccess.destroy();
+
+    return {
+        status: 'success',
+        message: 'You have left the smart lock group successfully.',
+        data: {}
+    };
+}
