@@ -11,6 +11,7 @@ import transactionRoutes from './routes/transactionRoutes';
 import './types/global';
 import passwordResetRoutes from './routes/passwordResetRoutes';
 import cardRoutes from './routes/cardRoutes';
+import userRoutes from './routes/userRoutes';
 
 const app = express();
 dotenv.config();
@@ -25,6 +26,7 @@ app.use('/api', palmShareRoutes);
 app.use('/api', transactionRoutes);
 app.use('/api', passwordResetRoutes);
 app.use('/api', cardRoutes);
+app.use('/api', userRoutes);
 
 sequelize.sync();
 export default app;
