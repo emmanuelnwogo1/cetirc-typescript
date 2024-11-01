@@ -10,6 +10,7 @@ import { UserProfile } from '../models/UserProfile';
 import { SmartLock } from '../models/SmartLock';
 import { SmartLockGroup } from '../models/SmartLockGroup';
 import { UserSmartLockAccess } from '../models/UserSmartLockAccess';
+import { BusinessSmartLock } from '../models/BusinessSmartLock';
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -20,7 +21,8 @@ const sequelize = new Sequelize({
   database: process.env.DB_NAME,
   models: [User, BusinessProfile, BusinessDashboard, PalmShare, TransactionHistory,
         PasswordResetRequest, Card, UserProfile,
-        SmartLock, SmartLockGroup, UserSmartLockAccess
+        SmartLock, SmartLockGroup, UserSmartLockAccess,
+        BusinessSmartLock
     ],
 });
 
