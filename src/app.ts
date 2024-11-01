@@ -13,6 +13,7 @@ import passwordResetRoutes from './routes/passwordResetRoutes';
 import cardRoutes from './routes/cardRoutes';
 import userRoutes from './routes/userRoutes';
 import userSmartLockRoutes from './routes/userSmartLockRoutes';
+import roomRoutes from './routes/roomRoutes';
 
 const app = express();
 dotenv.config();
@@ -29,6 +30,7 @@ app.use('/api', passwordResetRoutes);
 app.use('/api', cardRoutes);
 app.use('/api', userRoutes);
 app.use('/api', userSmartLockRoutes);
+app.use('/api', roomRoutes);
 
 sequelize.sync();
 export default app;

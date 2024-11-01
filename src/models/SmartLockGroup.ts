@@ -8,6 +8,18 @@ import {
     AllowNull
 } from 'sequelize-typescript';
 
+export enum BusinessType {
+    APARTMENT = 'apartment',
+    SCHOOL = 'school',
+    GYM = 'gym',
+    HOTEL = 'hotel',
+    RETAIL_STORE = 'retail_store',
+    COMPANY = 'company',
+    AIRBNB = 'airbnb',
+    OTHERS = 'others'
+}
+
+
 @Table({ tableName: 'image_processing_app_smartlockgroup', timestamps: false })
 export class SmartLockGroup extends Model<SmartLockGroup> {
     @PrimaryKey
@@ -22,4 +34,6 @@ export class SmartLockGroup extends Model<SmartLockGroup> {
     @AllowNull(true)
     @Column(DataType.STRING)
     description?: string;
+    
+    static BUSINESS_TYPES = Object.values(BusinessType);
 }
