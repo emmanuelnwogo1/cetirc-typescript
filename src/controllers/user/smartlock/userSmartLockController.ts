@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import userSmartLockService from '../../../services/user/smartlock/userSmartLockService';
+import { controlSmartLock } from '../../../services/user/smartlock/smartLockControlService';
 
 class UserSmartLockController {
     
@@ -18,6 +19,23 @@ class UserSmartLockController {
                     non_field_errors: [error.message]
                 }
             });
+        }
+    }
+
+    async controlSmartLock(req: Request, res: Response) {
+        const userId = req.user.id;
+        const { action, deviceId } = req.params;
+    
+        try {
+          const result = await controlSmartLock(userId, action, deviceId);
+          res.status(200).json(result);
+        } catch (error: any) {
+          const statusCode = error.message.includes('not found') ? 404 : 403;
+          res.status(statusCode).json({
+            status: 'failed',
+            message: error.message,
+            data: {},
+          });
         }
     }
 }
