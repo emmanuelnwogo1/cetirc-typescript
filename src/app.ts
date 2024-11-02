@@ -17,6 +17,7 @@ import userSmartLockRoutes from './routes/userSmartLockRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import roomRoutes from './routes/roomRoutes';
 import groupRoutes from './routes/groupRoutes';
+import withdrawCodeRoutes from './routes/withdrawCodeRoutes';
 
 const app = express();
 dotenv.config();
@@ -38,6 +39,7 @@ app.use('/api', userSmartLockRoutes);
 app.use('/api', roomRoutes);
 app.use('/api', notificationRoutes);
 app.use('/api', groupRoutes);
+app.use('/api', withdrawCodeRoutes);
 
 sequelize.sync();
 export default app;
