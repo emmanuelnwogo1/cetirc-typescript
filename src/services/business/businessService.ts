@@ -3,6 +3,9 @@ import * as geolib from 'geolib';
 import { BusinessProfile } from '../../models/BusinessProfile';
 import bcrypt from 'bcrypt';
 import { Conflict, NotFound } from 'http-errors';
+import path from "path";
+import fs from 'fs';
+import { User } from '../../models/User';
 
 const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
 
@@ -155,3 +158,59 @@ function calculateDistance(coords1: { latitude: number; longitude: number }, coo
 function deg2rad(deg: number) {
     return deg * (Math.PI / 180);
 }
+
+export const updateBusinessProfileImage = async (userId: number, image: Express.Multer.File) => {
+    try {
+        if (!image || !image.path) {
+            return {
+                status: 'failed',
+                message: 'No image file received.',
+                data: {},
+            };
+        }
+
+        const imageBuffer = await fs.promises.readFile(image.path);
+
+        const user = await User.findOne({ where: { id: userId } });
+        if (!user) {
+            return {
+                status: 'failed',
+                message: 'Unauthorized.',
+                data: {},
+            };
+        }
+
+        let profile = await BusinessProfile.findOne({ where: { user_id: userId } });
+        if (!profile) {
+            profile = await BusinessProfile.create({ user_id: user.id } as BusinessProfile);
+        }
+
+        const fileExtension = path.extname(image.originalname) || '.png';
+        const timestamp = new Date().toISOString().replace(/:/g, '-').slice(0, 19);
+        const imageName = `business_image_${timestamp}${fileExtension}`;
+        const imagePath = path.join(__dirname, '../../../business_images/', imageName);
+
+        await fs.promises.writeFile(imagePath, imageBuffer);
+        await fs.promises.unlink(image.path);
+
+        const serverUrl = process.env.SERVER_URL;
+        const fullImageUrl = `${serverUrl}/api/business_images/${imageName}`;
+
+        profile.image = `business_images/${imageName}`;
+        await profile.save();
+
+        return {
+            status: 'success',
+            message: 'Profile photo updated successfully.',
+            data: { image_url: fullImageUrl },
+        };
+    } catch (error: any) {
+        console.error("Error updating business profile photo:", error);
+
+        return {
+            status: 'failed',
+            message: 'An error occurred while updating the profile photo.',
+            data: { error: error.message || 'Unknown error' },
+        };
+    }
+};

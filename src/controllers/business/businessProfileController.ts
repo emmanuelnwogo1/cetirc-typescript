@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { getBusinessProfileDetails } from '../../services/business/businessProfileService';
+import { updateBusinessProfileImage } from '../../services/business/businessService';
 
 export const fetchBusinessProfileDetails = async (req: Request, res: Response) => {
     const userId = req.user.id;
@@ -13,4 +14,21 @@ export const fetchBusinessProfileDetails = async (req: Request, res: Response) =
     } else {
         res.status(500).json(result);
     }
+};
+
+export const updateBusinessProfileImageController = async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    const image = req.file;
+
+    if (!image) {
+        res.status(400).json({
+            status: 'failed',
+            message: 'No image file uploaded.',
+        });
+        return;
+    }
+
+    const result = await updateBusinessProfileImage(userId, image);
+
+    res.json(result);
 };

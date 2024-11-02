@@ -111,13 +111,13 @@ export const updateUserProfilePhoto = async (userId: number, image: Express.Mult
         const serverUrl = process.env.SERVER_URL;
         const fullImageUrl = `${serverUrl}/api/images/${imageName}`;
 
-        profile.image = fullImageUrl;
+        profile.image = `images/${imageName}`;
         await profile.save();
 
         return {
             status: 'success',
             message: 'Profile photo updated successfully.',
-            data: { image_url: profile.image },
+            data: { image_url: fullImageUrl },
         };
     } catch (error: any) {
         return {
