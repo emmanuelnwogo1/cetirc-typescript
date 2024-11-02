@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import authRoutes from './routes/authRoutes';
 import sequelize from './config/database';
 import businessRoutes from './routes/businessRoutes';
@@ -15,7 +16,7 @@ import userRoutes from './routes/userRoutes';
 import userSmartLockRoutes from './routes/userSmartLockRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import roomRoutes from './routes/roomRoutes';
-import path from 'path';
+import groupRoutes from './routes/groupRoutes';
 
 const app = express();
 dotenv.config();
@@ -36,6 +37,7 @@ app.use('/api', userRoutes);
 app.use('/api', userSmartLockRoutes);
 app.use('/api', roomRoutes);
 app.use('/api', notificationRoutes);
+app.use('/api', groupRoutes);
 
 sequelize.sync();
 export default app;
