@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { deletePalmShareMember, getPalmShareMembers, savePalmShareSettings, updatePalmShareMember } from '../services/palmShareService';
+import { deletePalmShareMember, getPalmShareMembers, savePalmShareSettings, searchPalmShare, updatePalmShareMember } from '../services/palmShareService';
 import { User } from '../models/User';
 
 export const palmShareController = async (req: Request, res: Response) => {
@@ -88,3 +88,18 @@ export const deletePalmShareMemberController = async (req: Request, res: Respons
         });
     }
 }
+
+export const searchPalmShareController = async (req: Request, res: Response) => {
+    const allowedUsername = req.query.allowed_username as string;
+    const dateCreated = req.query.date_created as string;
+
+    const result = await searchPalmShare(allowedUsername, dateCreated);
+
+    if (result.status === 'failed') {
+        res.status(400).json(result);
+    }else if(result.status === 'success'){
+        res.status(200).json(result);
+    }else{
+        res.status(404).json(result);
+    }
+};

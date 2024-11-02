@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { PalmShare } from '../models/PalmShare';
 import { User } from '../models/User';
 import { UserProfile } from '../models/UserProfile';
@@ -45,7 +46,6 @@ export const getPalmShareMembers = async (username: string) => {
         throw new Error('User profile not found');
     }
 
-    // Filter PalmShare members based on the user profile
     const palmshareMembers = await PalmShare.findAll({
         where: { owner_id: userProfile.id }
     });
@@ -65,7 +65,6 @@ export const updatePalmShareMember = async (allowedUsername: string, user: any, 
         throw new Error('Allowed user does not exist');
     }
 
-    // Find the PalmShare member
     const palmShareMember = await PalmShare.findOne({
         where: {
             owner_id: userProfile.id,
@@ -94,19 +93,54 @@ export const deletePalmShareMember = async (allowedUsername: string, userId: num
         throw new Error('PalmShare member does not exist.');
     }
 
-    // Check for the PalmShare entry between these two users
     const palmShareMember = await PalmShare.findOne({
         where: { owner_id: userProfile.id, allowed_user_id: allowedUser.id },
     });
 
     if (!palmShareMember) throw new Error('PalmShare member does not exist.');
 
-    // Remove the PalmShare member
     await palmShareMember.destroy();
 
     return {
         status: 'success',
         message: 'PalmShare member removed successfully.',
         data: {},
+    };
+};
+
+export const searchPalmShare = async (allowedUsername?: string, dateCreated?: string) => {
+    const filters: any = {};
+
+    if (allowedUsername) {
+        const users = await User.findAll({
+            where: {
+                username: {
+                    [Op.iLike]: `%${allowedUsername}%`
+                }
+            }
+        });
+
+        const userIds = users.map(user => user.id);
+        filters.allowed_user_id = {
+            [Op.in]: userIds,
+        };
+    }
+
+    if (dateCreated) {
+        try {
+            filters.date_created = {
+                [Op.eq]: new Date(dateCreated),
+            };
+        } catch (error) {
+            return { status: 'failed', message: 'Invalid date format. Use YYYY-MM-DD.' };
+        }
+    }
+
+    const palmShares = await PalmShare.findAll({ where: filters });
+    
+    return {
+        status: 'success',
+        message: 'Data retrieved successfully.',
+        data: palmShares,
     };
 };
