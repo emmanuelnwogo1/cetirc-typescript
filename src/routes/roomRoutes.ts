@@ -5,6 +5,7 @@ import { roomDetailController } from '../controllers/room/roomDetailController';
 import { roomSmartLockController } from '../controllers/room/smartlock/roomSmartLockController';
 import { createUserAccessController, viewUserAccessInRoomController } from '../controllers/room/access/roomAccessController';
 import { deleteUserAccessFromRoomController } from '../controllers/room/access/deleteUserAccessFromRoomController';
+import { editUserAccessController } from '../controllers/room/access/editUserAccessController';
 
 const router = express.Router();
 
@@ -14,5 +15,6 @@ router.post('/assign-smart-lock-to-room/:id', verifyToken, roomSmartLockControll
 router.get('/user-access/:room_id', verifyToken, viewUserAccessInRoomController);
 router.delete('/remove-access/:user_id', verifyToken, deleteUserAccessFromRoomController);
 router.post('/grant-access/:business_type', verifyToken, createUserAccessController);
+router.patch('/update-access/:user_id', verifyToken, editUserAccessController);
 
 export default router;
