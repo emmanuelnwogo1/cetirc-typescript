@@ -24,7 +24,7 @@ export class UserProfile extends Model<UserProfile> {
     uploaded_at?: Date;
 
     @Column(DataType.STRING)
-    username_id!: string;
+    username_id!: number;
 
     @Column(DataType.STRING)
     business_associated?: string;

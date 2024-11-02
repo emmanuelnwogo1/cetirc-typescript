@@ -1,4 +1,7 @@
 import { UserProfile } from "../../models/UserProfile";
+import { User } from "../../models/User";
+import path from "path";
+import fs from 'fs';
 
 export const updateUserProfile = async (userId: number, data: any) => {
     try {
@@ -12,7 +15,6 @@ export const updateUserProfile = async (userId: number, data: any) => {
             };
         }
 
-        // Update the profile with provided data
         await userProfile.update(data);
         return {
             status: "success",
@@ -30,7 +32,7 @@ export const updateUserProfile = async (userId: number, data: any) => {
 
 export const getUserProfileDetails = async (userId: number) => {
     try {
-        // Fetch the user profile based on the authenticated user ID
+        
         const userProfile = await UserProfile.findOne({ where: { id: userId } });
 
         if (!userProfile) {
@@ -41,7 +43,6 @@ export const getUserProfileDetails = async (userId: number) => {
             };
         }
 
-        // Format user profile data for response
         const profileData = {
             user_id: userProfile.id,
             username: userProfile.username_id,
@@ -61,6 +62,63 @@ export const getUserProfileDetails = async (userId: number) => {
             status: "error",
             message: "Failed to retrieve user profile.",
             data: error
+        };
+    }
+};
+
+export const updateUserProfilePhoto = async (userId: number, image: Express.Multer.File) => {
+
+    try {
+        if (!image || !image.path) {
+            return {
+                status: 'failed',
+                message: 'No image file received.',
+                data: {},
+            };
+        }
+
+        const imageBuffer = await fs.promises.readFile(image.path);
+
+        const user = await User.findOne({ where: { id: userId } });
+        if (!user) {
+            return {
+                status: 'failed',
+                message: 'Unauthorized.',
+                data: {},
+            };
+        }
+
+        let profile = await UserProfile.findOne({
+            where: { username_id: userId },
+        });
+
+        if (!profile) {
+            profile = await UserProfile.create({
+                username_id: user.id,
+                email: user.email,
+            } as UserProfile);
+        }
+
+        const fileExtension = path.extname(image.originalname) || '.png';
+        const timestamp = new Date().toISOString().replace(/:/g, '-').slice(0, 19);
+        const imageName = `image_${timestamp}${fileExtension}`;
+        const imagePath = path.join(__dirname, '../profile_images', imageName);
+
+        await fs.promises.writeFile(imagePath, imageBuffer);
+
+        profile.image = `profile_images/${imageName}`;
+        await profile.save();
+
+        return {
+            status: 'success',
+            message: 'Profile photo updated successfully.',
+            data: { image_url: profile.image },
+        };
+    } catch (error: any) {
+        return {
+            status: 'failed',
+            message: 'An error occurred while updating the profile photo.',
+            data: { error: error.message || 'Unknown error' },
         };
     }
 };

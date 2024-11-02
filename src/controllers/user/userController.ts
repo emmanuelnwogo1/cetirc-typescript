@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getUserProfileDetails, updateUserProfile } from '../../services/user/userService';
+import { getUserProfileDetails, updateUserProfile, updateUserProfilePhoto } from '../../services/user/userService';
 
 export const editUserProfile = async (req: Request, res: Response) => {
     const userId = req.user.id;
@@ -9,7 +9,7 @@ export const editUserProfile = async (req: Request, res: Response) => {
 
     if (result.status === "success") {
         res.status(200).json(result);
-    } else if (result.message === "User profile does not exist.") {
+    } else if (result.status === "failed") {
         res.status(404).json(result);
     } else {
         res.status(400).json(result);
@@ -23,9 +23,31 @@ export const fetchUserProfileDetails = async (req: Request, res: Response) => {
 
     if (result.status === "success") {
         res.status(200).json(result);
-    } else if (result.message === "User profile does not exist.") {
+    } else if (result.status === "failed") {
         res.status(404).json(result);
     } else {
         res.status(500).json(result);
     }
 };
+
+export const updateProfilePhotoController = async (req: Request, res: Response) => {
+    const userId = req.user.id;
+
+    const image = req.file;
+
+    if (!image) {
+        res.status(400).json({
+            status: 'failed',
+            message: 'No image file uploaded.',
+        });
+    }else{
+        const result = await updateUserProfilePhoto(userId, image);
+
+        if (result.status === 'failed') {
+            res.status(400).json(result);
+        } else {
+            res.status(200).json(result);
+        }
+    }
+};
+
