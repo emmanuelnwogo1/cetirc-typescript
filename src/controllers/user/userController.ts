@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { getUserProfileDetails, updateUserProfile, updateUserProfilePhoto } from '../../services/user/userService';
+import { MulterError } from 'multer';
 
 export const editUserProfile = async (req: Request, res: Response) => {
     const userId = req.user.id;
@@ -33,21 +34,29 @@ export const fetchUserProfileDetails = async (req: Request, res: Response) => {
 export const updateProfilePhotoController = async (req: Request, res: Response) => {
     const userId = req.user.id;
 
-    const image = req.file;
+    try {
+        const image = req.file;
 
-    if (!image) {
+        if (!image) {
+            res.status(400).json({
+                status: 'failed',
+                message: 'No image file uploaded.',
+            });
+        }else{
+            const result = await updateUserProfilePhoto(userId, image);
+
+            if (result.status === 'failed') {
+                res.status(400).json(result);
+            } else {
+                res.status(200).json(result);
+            }
+        }
+    } catch (error: any) {
         res.status(400).json({
             status: 'failed',
-            message: 'No image file uploaded.',
+            message: error.message,
         });
-    }else{
-        const result = await updateUserProfilePhoto(userId, image);
-
-        if (result.status === 'failed') {
-            res.status(400).json(result);
-        } else {
-            res.status(200).json(result);
-        }
     }
 };
+
 

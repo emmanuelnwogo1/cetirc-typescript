@@ -32,7 +32,14 @@ class UserSmartLockService {
         });
 
         if (existingAccess) {
-            throw new Error('User already has access to this smart lock.');
+            return {
+                status: 'failed',
+                message: 'User already has access to this smart lock.',
+                data: {
+                    device_id: deviceId,
+                    group_name: groupName
+                }
+            };
         }
 
         await UserSmartLockAccess.create({

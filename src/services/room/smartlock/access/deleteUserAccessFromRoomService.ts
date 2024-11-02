@@ -1,11 +1,10 @@
 import { UserSmartLockAccess } from "../../../../models/UserSmartLockAccess";
 
-export const removeUserAccessFromRoom = async (userId: number, roomId: number, currentUser: any) => {
+export const removeUserAccessFromRoom = async (userId: number, currentUser: any) => {
     try {
         const accessRecords = await UserSmartLockAccess.findAll({
             where: {
                 user_id: userId,
-                room_id: roomId,
                 granted_by_id: currentUser.id,
             },
         });
@@ -14,7 +13,6 @@ export const removeUserAccessFromRoom = async (userId: number, roomId: number, c
             const count = await UserSmartLockAccess.destroy({
                 where: {
                     user_id: userId,
-                    room_id: roomId,
                     granted_by_id: currentUser.id,
                 },
             });
