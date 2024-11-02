@@ -10,7 +10,7 @@ import {
 } from 'sequelize-typescript';
 import { User } from './User';
 
-@Table({ tableName: 'notifications', timestamps: false })
+@Table({ tableName: 'image_processing_app_notification', timestamps: false })
 export class Notification extends Model<Notification> {
     @PrimaryKey
     @AutoIncrement

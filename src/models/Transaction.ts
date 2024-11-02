@@ -11,7 +11,7 @@ import {
 import { User } from './User';
 import { BusinessProfile } from './BusinessProfile';
 
-@Table({ tableName: 'transactions', timestamps: false })
+@Table({ tableName: 'image_processing_app_transaction', timestamps: false })
 export class Transaction extends Model<Transaction> {
     @PrimaryKey
     @AutoIncrement

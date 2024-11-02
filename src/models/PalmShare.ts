@@ -10,7 +10,7 @@ import {
 } from 'sequelize-typescript';
 import { User } from './User';
 
-@Table({ tableName: 'palm_share', timestamps: false })
+@Table({ tableName: 'image_processing_app_palmshare', timestamps: false })
 export class PalmShare extends Model<PalmShare> {
     @PrimaryKey
     @AutoIncrement
