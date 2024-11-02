@@ -50,69 +50,89 @@ export class AuthService {
   }
 
   async registerUser(username: string, email: string, password: string, confirmPassword: string) {
-        if (password !== confirmPassword) {
+        try{
+
+            if (!username || !email || !password || !confirmPassword) {
+                return{
+                    status: 'failed',
+                    message: 'Registration failed.',
+                    data: {
+                        error: ['All fields are required.']
+                    }
+                };
+            }
+    
+
+            if (password !== confirmPassword) {
+                return {
+                    status: 'failed',
+                    message: 'Registration failed.',
+                    data: {
+                        password: ['Passwords do not match.']
+                    }
+                };
+            }
+    
+            const existingUser = await User.findOne({
+                where: {
+                    [Op.or]: [{ username }, { email }]
+                }
+            });
+    
+            if (existingUser) {
+                return {
+                    status: 'failed',
+                    message: 'Registration failed.',
+                    data: {
+                        username: existingUser.username === username ? ['A user with that username already exists.'] : [],
+                        email: existingUser.email === email ? ['A user with that email already exists.'] : []
+                    }
+                };
+            }
+    
+            const hashedPassword = await bcrypt.hash(password, 10);
+    
+            const newUser = await User.create({
+                username,
+                email,
+                password: hashedPassword,
+                is_superuser: false,
+                first_name: username,
+                last_name: username,
+                is_staff: false,
+                is_active: false,
+                date_joined: new Date()
+            } as User);
+    
+            const accessToken = jwt.sign(
+                { userId: newUser.id },
+                process.env.JWT_SECRET || 'default_secret',
+                { expiresIn: '24h' }
+            );
+    
+            const refreshToken = jwt.sign(
+                { userId: newUser.id },
+                process.env.JWT_SECRET || 'default_secret',
+                { expiresIn: '7d' }
+            );
+    
             return {
-                status: 'failed',
-                message: 'Registration failed.',
+                status: 'success',
+                message: 'User registered successfully.',
                 data: {
-                    password: ['Passwords do not match.']
+                    username: newUser.username,
+                    email: newUser.email,
+                    access_token: accessToken,
+                    refresh_token: refreshToken
                 }
             };
-        }
-
-        const existingUser = await User.findOne({
-            where: {
-                [Op.or]: [{ username }, { email }]
-            }
-        });
-
-        if (existingUser) {
+        }catch(e: any){
             return {
                 status: 'failed',
-                message: 'Registration failed.',
-                data: {
-                    username: existingUser.username === username ? ['A user with that username already exists.'] : [],
-                    email: existingUser.email === email ? ['A user with that email already exists.'] : []
-                }
+                message: 'Failed to register user.',
+                data: {error: e.message}
             };
         }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = await User.create({
-            username,
-            email,
-            password: hashedPassword,
-            is_superuser: false,
-            first_name: username,
-            last_name: username,
-            is_staff: false,
-            is_active: false,
-            date_joined: new Date()
-        } as User);
-
-        const accessToken = jwt.sign(
-            { userId: newUser.id },
-            process.env.JWT_SECRET || 'default_secret',
-            { expiresIn: '24h' }
-        );
-
-        const refreshToken = jwt.sign(
-            { userId: newUser.id },
-            process.env.JWT_SECRET || 'default_secret',
-            { expiresIn: '7d' }
-        );
-
-        return {
-            status: 'success',
-            message: 'User registered successfully.',
-            data: {
-                username: newUser.username,
-                email: newUser.email,
-                access_token: accessToken,
-                refresh_token: refreshToken
-            }
-        };
     }
 
     businessLogin = async (email: string, password: string) => {
