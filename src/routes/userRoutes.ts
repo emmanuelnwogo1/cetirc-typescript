@@ -4,7 +4,7 @@ import { editUserProfile, fetchUserProfileDetails, updateProfilePhotoController 
 import multer from 'multer';
 
 const router = Router();
-const upload = multer({ dest: 'profile_images/' });
+const upload = multer({ dest: 'images/' });
 
 router.put('/user_update', verifyToken, editUserProfile);
 router.get('/user_profile', verifyToken, fetchUserProfileDetails);

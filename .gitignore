@@ -1,2 +1,11 @@
 .env
 node_modules/
+# Ignore all files in the images directory
+images/*
+profile_images/*
+
+# But not the directory itself
+!images/
+!profile_images/
+temp_images/*
+!temp_images/

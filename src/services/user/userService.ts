@@ -67,7 +67,6 @@ export const getUserProfileDetails = async (userId: number) => {
 };
 
 export const updateUserProfilePhoto = async (userId: number, image: Express.Multer.File) => {
-
     try {
         if (!image || !image.path) {
             return {
@@ -76,6 +75,7 @@ export const updateUserProfilePhoto = async (userId: number, image: Express.Mult
                 data: {},
             };
         }
+        console.log(image.path)
 
         const imageBuffer = await fs.promises.readFile(image.path);
 
@@ -102,11 +102,16 @@ export const updateUserProfilePhoto = async (userId: number, image: Express.Mult
         const fileExtension = path.extname(image.originalname) || '.png';
         const timestamp = new Date().toISOString().replace(/:/g, '-').slice(0, 19);
         const imageName = `image_${timestamp}${fileExtension}`;
-        const imagePath = path.join(__dirname, '../profile_images', imageName);
+        const imagePath = path.join(__dirname, '../../../images/', imageName);
+
+        console.log(imagePath);
 
         await fs.promises.writeFile(imagePath, imageBuffer);
 
-        profile.image = `profile_images/${imageName}`;
+        const serverUrl = process.env.SERVER_URL;
+        const fullImageUrl = `${serverUrl}/api/images/${imageName}`;
+
+        profile.image = fullImageUrl;
         await profile.save();
 
         return {
