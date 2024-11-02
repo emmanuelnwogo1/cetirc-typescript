@@ -2,10 +2,12 @@
 node_modules/
 # Ignore all files in the images directory
 images/*
+business_images/*
 profile_images/*
+temp_images/*
 
 # But not the directory itself
 !images/
 !profile_images/
-temp_images/*
+!business_images/
 !temp_images/
