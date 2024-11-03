@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { getUserProfileDetails, updateUserProfile, updateUserProfilePhoto } from '../../services/user/userService';
-import { MulterError } from 'multer';
+import { createUser, deleteUser, getUserById, getUserProfileDetails, getUsers, updateUserProfile, updateUserProfilePhoto } from '../../services/user/userService';
 
 export const editUserProfile = async (req: Request, res: Response) => {
     const userId = req.user.id;
@@ -56,6 +55,48 @@ export const updateProfilePhotoController = async (req: Request, res: Response) 
             status: 'failed',
             message: error.message,
         });
+    }
+};
+
+export const getUsersController = async (req: Request, res: Response) => {
+    try {
+        const users = await getUsers();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+};
+  
+export const getUserByIdController = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+      const user = await getUserById(id);
+      if (!user) {
+        res.status(404).json({ message: 'User not found.' });
+      } else {
+        res.status(200).json(user);
+      }
+    } catch (error) {
+      res.status(500).json({ message: 'Internal server error.' });
+    }
+};
+  
+export const createUserController = async (req: Request, res: Response) => {
+    try {
+      const newUser = await createUser(req.body);
+      res.status(201).json(newUser);
+    } catch (error) {
+      res.status(400).json({ message: 'Bad request.' });
+    }
+};
+  
+export const deleteUserController = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+      await deleteUser(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: 'Internal server error.' });
     }
 };
 

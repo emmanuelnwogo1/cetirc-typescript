@@ -127,3 +127,20 @@ export const updateUserProfilePhoto = async (userId: number, image: Express.Mult
         };
     }
 };
+
+export const getUsers = async () => {
+    return await User.findAll();
+};
+  
+export const getUserById = async (id: string) => {
+    return await User.findByPk(id);
+};
+  
+export const createUser = async (userData: any) => {
+    const newUser = new User(userData);
+    return await newUser.save();
+};
+  
+export const deleteUser = async (id: string) => {
+    //return await User.findByIdAndDelete(id);
+};

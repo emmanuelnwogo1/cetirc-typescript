@@ -22,7 +22,7 @@ import {
   
     @AllowNull(false)
     @Column(DataType.STRING)
-    email!: string;
+    email?: string;
   
     @AllowNull(false)
     @Column(DataType.STRING)
