@@ -88,7 +88,11 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
       res.status(500).json({
         status: 'failed',
         message: 'Failed to retrieve businessprofiles',
-        data: null,
+        data: {
+            errors: error.errors.map((err: any) => ({
+              message: err.message,
+            })),
+          },
       });
     }
 });
@@ -115,7 +119,11 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     res.status(500).json({
       status: 'failed',
       message: 'Failed to retrieve businessprofile',
-      data: null,
+      data: {
+        errors: error.errors.map((err: any) => ({
+          message: err.message,
+        })),
+      },
     });
   }
 });
@@ -146,7 +154,11 @@ router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     res.status(500).json({
       status: 'failed',
       message: 'Failed to update businessprofile',
-      data: null,
+      data: {
+        errors: error.errors.map((err: any) => ({
+          message: err.message,
+        })),
+      },
     });
   }
 });
@@ -182,7 +194,11 @@ router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
       res.status(500).json({
         status: 'failed',
         message: 'Failed to delete BusinessProfile',
-        data: null,
+        data: {
+            errors: error.errors.map((err: any) => ({
+              message: err.message,
+            })),
+          },
       });
     }
 });
