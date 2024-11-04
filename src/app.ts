@@ -18,7 +18,7 @@ import notificationRoutes from './routes/notificationRoutes';
 import roomRoutes from './routes/roomRoutes';
 import groupRoutes from './routes/groupRoutes';
 import withdrawCodeRoutes from './routes/withdrawCodeRoutes';
-import userCrudRoutes from './crud/user';
+import fs from 'fs';
 
 const app = express();
 dotenv.config();
@@ -43,7 +43,12 @@ app.use('/api', groupRoutes);
 app.use('/api', withdrawCodeRoutes);
 
 // crud routes
-app.use('/api/admin/users', userCrudRoutes);
+const crudDir = path.join(__dirname, './crud');
+fs.readdirSync(crudDir).forEach((file: any) => {
+  const modelName = file.replace('.ts', '');
+  const crudRoutes = require(path.join(crudDir, file)).default;
+  app.use(`/api/admin/${modelName}s`, crudRoutes);
+});
 
 sequelize.sync();
 export default app;

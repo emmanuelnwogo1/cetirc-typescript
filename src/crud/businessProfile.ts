@@ -3,6 +3,7 @@ import { BusinessProfile } from '../models/BusinessProfile';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
+import { BusinessDashboard } from '../models/BusinessDashboard';
 
 const router = Router();
 
@@ -19,7 +20,11 @@ router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     res.status(500).json({
       status: 'failed',
       message: 'Failed to create businessprofile',
-      data: null,
+      data: {
+        errors: error.errors.map((err: any) => ({
+          message: err.message,
+        })),
+      },
     });
   }
 });
@@ -35,10 +40,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
       const whereClause = q
         ? {
             [Op.or]: [
-              { username: { [Op.like]: `%${q}%` } },
+              { name: { [Op.like]: `%${q}%` } },
               { email: { [Op.like]: `%${q}%` } },
-              { first_name: { [Op.like]: `%${q}%` } },
-              { last_name: { [Op.like]: `%${q}%` } },
+              { address: { [Op.like]: `%${q}%` } },
             ],
           }
         : {};
@@ -149,31 +153,38 @@ router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
 
 // Delete
 router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
-  try {
-    const deleted = await BusinessProfile.destroy({
-      where: { id: req.params.id },
-    });
-
-    if (deleted) {
-      res.status(200).json({
-        status: 'success',
-        message: 'BusinessProfile deleted successfully',
-        data: null,
+    const businessProfileId = req.params.id;
+  
+    try {
+      await BusinessDashboard.destroy({
+        where: { business_id: businessProfileId },
       });
-    } else {
-      res.status(404).json({
+  
+      // Now, delete the BusinessProfile
+      const deleted = await BusinessProfile.destroy({
+        where: { id: businessProfileId },
+      });
+  
+      if (deleted) {
+        res.status(200).json({
+          status: 'success',
+          message: 'BusinessProfile and its associated BusinessDashboards deleted successfully',
+          data: null,
+        });
+      } else {
+        res.status(404).json({
+          status: 'failed',
+          message: 'BusinessProfile not found',
+          data: null,
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({
         status: 'failed',
-        message: 'BusinessProfile not found',
+        message: 'Failed to delete BusinessProfile',
         data: null,
       });
     }
-  } catch (error: any) {
-    res.status(500).json({
-      status: 'failed',
-      message: 'Failed to delete businessprofile',
-      data: null,
-    });
-  }
 });
 
 export default router;

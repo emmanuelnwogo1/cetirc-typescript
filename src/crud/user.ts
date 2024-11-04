@@ -3,25 +3,36 @@ import { User } from '../models/User';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
+import bcrypt from 'bcrypt';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
-  try {
-    const user = await User.create(req.body);
-    res.status(201).json({
-      status: 'success',
-      message: 'User created successfully',
-      data: user,
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      status: 'failed',
-      message: 'Failed to create user',
-      data: null,
-    });
-  }
+    try {
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+  
+      const user = await User.create({
+        ...req.body,
+        password: hashedPassword,
+      });
+  
+      res.status(201).json({
+        status: 'success',
+        message: 'User created successfully',
+        data: user,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'failed',
+        message: 'Failed to create user',
+        data: {
+            errors: error.errors?.map((err: any) => ({
+              message: err.message,
+            })) ?? `Error code: ${error.parent.code}`,
+        },
+      });
+    }
 });
 
 // Read all with optional search
@@ -84,7 +95,11 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
       res.status(500).json({
         status: 'failed',
         message: 'Failed to retrieve users',
-        data: null,
+        data: {
+            errors: error.errors?.map((err: any) => ({
+              message: err.message,
+            })) ?? `Error code: ${error.parent.code}`,
+        },
       });
     }
 });
@@ -111,7 +126,11 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     res.status(500).json({
       status: 'failed',
       message: 'Failed to retrieve user',
-      data: null,
+      data: {
+        errors: error.errors?.map((err: any) => ({
+          message: err.message,
+        })) ?? `Error code: ${error.parent.code}`,
+      },
     });
   }
 });
@@ -142,7 +161,11 @@ router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     res.status(500).json({
       status: 'failed',
       message: 'Failed to update user',
-      data: null,
+      data: {
+        errors: error.errors?.map((err: any) => ({
+          message: err.message,
+        })) ?? `Error code: ${error.parent.code}`,
+      },
     });
   }
 });
@@ -171,7 +194,11 @@ router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
     res.status(500).json({
       status: 'failed',
       message: 'Failed to delete user',
-      data: null,
+      data: {
+        errors: error.errors?.map((err: any) => ({
+          message: err.message,
+        })) ?? `Error code: ${error.parent.code}`,
+      },
     });
   }
 });
