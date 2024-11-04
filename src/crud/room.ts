@@ -3,27 +3,27 @@ import { Room } from '../models/Room';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
+import { SmartLockGroup } from '../models/SmartLockGroup';
+import { SmartLock } from '../models/SmartLock';
+import { BusinessSmartLock } from '../models/BusinessSmartLock';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await Room.create({
+        const room = await Room.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'Room created successfully',
-            data: user,
+            data: room,
         });
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to create room',
+            message: error,
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
@@ -44,30 +44,27 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.like]: `%${q}%` } },
-                    { email: { [Op.like]: `%${q}%` } },
-                    { first_name: { [Op.like]: `%${q}%` } },
-                    { last_name: { [Op.like]: `%${q}%` } },
+                    { name: { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
   
-        const { rows: users, count: totalUsers } = await Room.findAndCountAll({
+        const { rows: rooms, count: totalRooms } = await Room.findAndCountAll({
             where: whereClause,
             offset,
             limit: limitNumber,
         });
   
-        const totalPages = Math.ceil(totalUsers / limitNumber);
+        const totalPages = Math.ceil(totalRooms / limitNumber);
   
-        if (!users.length) {
+        if (!rooms.length) {
             res.status(404).json({
                 status: 'failed',
                 message: 'No rooms found on this page',
                 data: {
-                    users: [],
+                    rooms: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalRooms,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -79,9 +76,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'Room retrieved successfully',
                 data: {
-                    users,
+                    rooms,
                     pagination: {
-                        total: totalUsers,
+                        total: totalRooms,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -105,8 +102,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await Room.findByPk(req.params.id);
-        if (!user) {
+        const room = await Room.findByPk(req.params.id);
+        if (!room) {
             res.status(404).json({
                 status: 'failed',
                 message: 'Room not found',
@@ -116,7 +113,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'Room retrieved successfully',
-                data: user,
+                data: room,
             });
         }
     } catch (error: any) {
@@ -135,17 +132,17 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const roomId = parseFloat(req.params.id);
         const [updated] = await Room.update(req.body, {
-            where: { id: userId },
+            where: { id: roomId },
         });
 
         if (updated > 0) {
-            const updatedUser = await Room.findByPk(userId);
+            const updatedRoom = await Room.findByPk(roomId);
             res.json({
                 status: 'success',
                 message: 'Room updated successfully',
-                data: updatedUser,
+                data: updatedRoom,
             });
         } else {
             res.status(404).json({
@@ -170,31 +167,69 @@ router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Delete
 router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const deleted = await Room.destroy({
-            where: { id: req.params.id },
-        });
+        // Step 1: Find the Room by its ID
+        const room = await Room.findByPk(req.params.id);
 
-        if (deleted) {
-            res.status(200).json({
-                status: 'success',
-                message: 'Room deleted successfully',
-                data: null,
-            });
-        } else {
+        if (!room) {
             res.status(404).json({
                 status: 'failed',
                 message: 'Room not found',
                 data: null,
             });
+        } else {
+            const groupId = room.group_id;
+
+            // Step 2: Find associated Smart Lock for the Room
+            const smartLock = await SmartLock.findOne({
+                where: {
+                    room_id: room.id,
+                    group_id: groupId
+                }
+            });
+
+            if (!smartLock) {
+                res.status(404).json({
+                    status: 'failed',
+                    message: 'Smart lock not found for the room',
+                    data: null,
+                });
+            } else {
+                // Step 3: Delete related BusinessSmartLock records
+                await BusinessSmartLock.destroy({
+                    where: { smart_lock_id: smartLock.id }
+                });
+
+                // Step 4: Delete the SmartLock itself
+                await SmartLock.destroy({
+                    where: { id: smartLock.id }
+                });
+
+                // Step 5: Delete the SmartLockGroup
+                await SmartLockGroup.destroy({
+                    where: { id: groupId }
+                });
+
+                // Step 6: Delete the Room
+                await Room.destroy({
+                    where: { id: req.params.id }
+                });
+
+                // Final Response
+                res.status(200).json({
+                    status: 'success',
+                    message: 'Room and associated records deleted successfully',
+                    data: null,
+                });
+            }
         }
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to delete room',
+            message: 'Failed to delete room and associated records',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
-                })) ?? `Error code: ${error.parent?.code}`,
+                })) ?? `Error code: ${error.parent?.detail}`,
             },
         });
     }

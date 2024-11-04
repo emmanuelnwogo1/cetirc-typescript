@@ -44,10 +44,10 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.like]: `%${q}%` } },
-                    { email: { [Op.like]: `%${q}%` } },
-                    { first_name: { [Op.like]: `%${q}%` } },
-                    { last_name: { [Op.like]: `%${q}%` } },
+                    { username: { [Op.iLike]: `%${q}%` } },
+                    { email: { [Op.iLike]: `%${q}%` } },
+                    { first_name: { [Op.iLike]: `%${q}%` } },
+                    { last_name: { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
