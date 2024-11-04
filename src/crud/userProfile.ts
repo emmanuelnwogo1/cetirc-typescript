@@ -3,22 +3,20 @@ import { UserProfile } from '../models/UserProfile';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
+import { User } from '../models/User';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await UserProfile.create({
+        const userProfile = await UserProfile.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'UserProfile created successfully',
-            data: user,
+            data: userProfile,
         });
     } catch (error: any) {
         res.status(500).json({
@@ -27,7 +25,7 @@ router.post('/', verifyToken, adminMiddleware, async (req, res) => {
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
-                })) ?? `Error code: ${error.parent?.code}`,
+                })) ?? `Error code: ${error.parent?.detail}`,
             },
         });
     }
@@ -44,30 +42,36 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.iLike]: `%${q}%` } },
+                    { '$user.first_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.last_name$': { [Op.iLike]: `%${q}%` } },
                     { email: { [Op.iLike]: `%${q}%` } },
-                    { first_name: { [Op.iLike]: `%${q}%` } },
-                    { last_name: { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
   
-        const { rows: users, count: totalUsers } = await UserProfile.findAndCountAll({
+        const { rows: userProfiles, count: totalUserProfiles } = await UserProfile.findAndCountAll({
             where: whereClause,
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['first_name', 'last_name'],
+                },
+            ],
             offset,
             limit: limitNumber,
         });
   
-        const totalPages = Math.ceil(totalUsers / limitNumber);
+        const totalPages = Math.ceil(totalUserProfiles / limitNumber);
   
-        if (!users.length) {
+        if (!userProfiles.length) {
             res.status(404).json({
                 status: 'failed',
                 message: 'No userprofiles found on this page',
                 data: {
-                    users: [],
+                    userProfiles: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalUserProfiles,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -79,9 +83,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'UserProfile retrieved successfully',
                 data: {
-                    users,
+                    userProfiles,
                     pagination: {
-                        total: totalUsers,
+                        total: totalUserProfiles,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -105,8 +109,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await UserProfile.findByPk(req.params.id);
-        if (!user) {
+        const userProfile = await UserProfile.findByPk(req.params.id);
+        if (!userProfile) {
             res.status(404).json({
                 status: 'failed',
                 message: 'UserProfile not found',
@@ -116,7 +120,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'UserProfile retrieved successfully',
-                data: user,
+                data: userProfile,
             });
         }
     } catch (error: any) {

@@ -5,7 +5,10 @@ import {
     PrimaryKey,
     DataType,
     AllowNull,
+    BelongsTo,
+    ForeignKey,
 } from 'sequelize-typescript';
+import { User } from './User';
 
 @Table({ tableName: 'image_processing_app_userprofile', timestamps: false })
 export class UserProfile extends Model<UserProfile> {
@@ -23,7 +26,9 @@ export class UserProfile extends Model<UserProfile> {
     @Column(DataType.DATE)
     uploaded_at?: Date;
 
-    @Column(DataType.STRING)
+    @ForeignKey(() => User)
+    @AllowNull(false)
+    @Column(DataType.INTEGER)
     username_id!: number;
 
     @Column(DataType.STRING)
@@ -43,4 +48,7 @@ export class UserProfile extends Model<UserProfile> {
 
     @Column(DataType.STRING)
     zip_code?: string;
+
+    @BelongsTo(() => User)
+    user!: User;
 }
