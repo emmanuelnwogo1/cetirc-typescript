@@ -1,69 +1,178 @@
 import { Router } from 'express';
 import { TransactionHistory } from '../models/TransactionHistory';
+import verifyToken from '../middlewares/authMiddleware';
+import adminMiddleware from '../middlewares/adminMiddleware';
+import { Op } from 'sequelize';
 
 const router = Router();
 
 // Create
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, adminMiddleware, async (req, res) => {
   try {
-    const user = await TransactionHistory.create(req.body);
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const transactionhistory = await TransactionHistory.create(req.body);
+    res.status(201).json({
+      status: 'success',
+      message: 'TransactionHistory created successfully',
+      data: transactionhistory,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'failed',
+      message: 'Failed to create transactionhistory',
+      data: null,
+    });
   }
 });
 
-// Read all
-router.get('/', async (req, res) => {
-  try {
-    const users = await TransactionHistory.findAll();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// Read all with optional search
+router.get('/', verifyToken, adminMiddleware, async (req, res) => {
+    const { q, page = 1, limit = 10 } = req.query;
+    try{
+        const pageNumber = parseInt(page as string) || 1;
+        const limitNumber = parseInt(limit as string) || 10;
+        const offset = (pageNumber - 1) * limitNumber;
+
+      const whereClause = q
+        ? {
+            [Op.or]: [
+              { username: { [Op.like]: `%${q}%` } },
+              { email: { [Op.like]: `%${q}%` } },
+              { first_name: { [Op.like]: `%${q}%` } },
+              { last_name: { [Op.like]: `%${q}%` } },
+            ],
+          }
+        : {};
+  
+      const { rows: transactionhistorys, count: totalTransactionHistorys } = await TransactionHistory.findAndCountAll({
+        where: whereClause,
+        offset,
+        limit: limitNumber,
+      });
+  
+      const totalPages = Math.ceil(totalTransactionHistorys / limitNumber);
+  
+      if (!transactionhistorys.length) {
+        res.status(404).json({
+          status: 'failed',
+          message: 'No transactionhistorys found on this page',
+          data: {
+            transactionhistorys: [],
+            pagination: {
+              total: totalTransactionHistorys,
+              page: pageNumber,
+              limit: limitNumber,
+              totalPages,
+            },
+          },
+        });
+      }else{
+        res.json({
+            status: 'success',
+            message: 'TransactionHistorys retrieved successfully',
+            data: {
+              transactionhistorys,
+              pagination: {
+                total: totalTransactionHistorys,
+                page: pageNumber,
+                limit: limitNumber,
+                totalPages,
+              },
+            },
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'failed',
+        message: 'Failed to retrieve transactionhistorys',
+        data: null,
+      });
+    }
 });
+  
 
 // Read one
-router.get('/:id', async (req, res) => {
+router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
   try {
-    const user = await TransactionHistory.findByPk(req.params.id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    const transactionhistory = await TransactionHistory.findByPk(req.params.id);
+    if (!transactionhistory) {
+      res.status(404).json({
+        status: 'failed',
+        message: 'TransactionHistory not found',
+        data: null,
+      });
+    } else {
+      res.json({
+        status: 'success',
+        message: 'TransactionHistory retrieved successfully',
+        data: transactionhistory,
+      });
     }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'failed',
+      message: 'Failed to retrieve transactionhistory',
+      data: null,
+    });
   }
 });
 
 // Update
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
   try {
+    const transactionhistoryId = parseFloat(req.params.id);
     const [updated] = await TransactionHistory.update(req.body, {
-      where: { id: req.params.id },
+      where: { id: transactionhistoryId },
     });
-    if (updated) {
-      const updatedUser = await TransactionHistory.findByPk(req.params.id);
-      return res.json(updatedUser);
+
+    if (updated > 0) {
+      const updatedTransactionHistory = await TransactionHistory.findByPk(transactionhistoryId);
+      res.json({
+        status: 'success',
+        message: 'TransactionHistory updated successfully',
+        data: updatedTransactionHistory,
+      });
+    } else {
+      res.status(404).json({
+        status: 'failed',
+        message: 'TransactionHistory not found',
+        data: null,
+      });
     }
-    throw new Error('User not found');
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'failed',
+      message: 'Failed to update transactionhistory',
+      data: null,
+    });
   }
 });
 
 // Delete
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
   try {
     const deleted = await TransactionHistory.destroy({
       where: { id: req.params.id },
     });
+
     if (deleted) {
-      return res.status(204).send();
+      res.status(200).json({
+        status: 'success',
+        message: 'TransactionHistory deleted successfully',
+        data: null,
+      });
+    } else {
+      res.status(404).json({
+        status: 'failed',
+        message: 'TransactionHistory not found',
+        data: null,
+      });
     }
-    throw new Error('User not found');
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'failed',
+      message: 'Failed to delete transactionhistory',
+      data: null,
+    });
   }
 });
 

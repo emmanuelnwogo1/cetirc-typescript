@@ -11,3 +11,5 @@ temp_images/*
 !profile_images/
 !business_images/
 !temp_images/
+
+code.ts
