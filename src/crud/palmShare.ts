@@ -3,22 +3,20 @@ import { PalmShare } from '../models/PalmShare';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
+import { User } from '../models/User';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await PalmShare.create({
+        const palmShare = await PalmShare.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'PalmShare created successfully',
-            data: user,
+            data: palmShare,
         });
     } catch (error: any) {
         res.status(500).json({
@@ -44,30 +42,44 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.like]: `%${q}%` } },
-                    { email: { [Op.like]: `%${q}%` } },
-                    { first_name: { [Op.like]: `%${q}%` } },
-                    { last_name: { [Op.like]: `%${q}%` } },
+                    { '$owner.first_name$': { [Op.like]: `%${q}%` } },
+                    { '$owner.last_name$': { [Op.like]: `%${q}%` } },
+                    { '$owner.email$': { [Op.like]: `%${q}%` } },
+                    { '$allowedUser.first_name$': { [Op.like]: `%${q}%` } },
+                    { '$allowedUser.last_name$': { [Op.like]: `%${q}%` } },
+                    { '$allowedUser.email$': { [Op.like]: `%${q}%` } },
                 ],
             }
             : {};
-  
-        const { rows: users, count: totalUsers } = await PalmShare.findAndCountAll({
+
+        const { rows: palmShares, count: totalPalmShares } = await PalmShare.findAndCountAll({
             where: whereClause,
+            include: [
+                {
+                    model: User,
+                    as: 'owner',
+                    attributes: ['first_name', 'last_name', 'email'],
+                },
+                {
+                    model: User,
+                    as: 'allowedUser',
+                    attributes: ['first_name', 'last_name', 'email'],
+                },
+            ],
             offset,
             limit: limitNumber,
         });
-  
-        const totalPages = Math.ceil(totalUsers / limitNumber);
-  
-        if (!users.length) {
+
+        const totalPages = Math.ceil(totalPalmShares / limitNumber);
+
+        if (!palmShares.length) {
             res.status(404).json({
                 status: 'failed',
                 message: 'No palmshares found on this page',
                 data: {
-                    users: [],
+                    palmShares: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalPalmShares,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -79,9 +91,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'PalmShare retrieved successfully',
                 data: {
-                    users,
+                    palmShares,
                     pagination: {
-                        total: totalUsers,
+                        total: totalPalmShares,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -105,8 +117,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await PalmShare.findByPk(req.params.id);
-        if (!user) {
+        const palmShare = await PalmShare.findByPk(req.params.id);
+        if (!palmShare) {
             res.status(404).json({
                 status: 'failed',
                 message: 'PalmShare not found',
@@ -116,7 +128,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'PalmShare retrieved successfully',
-                data: user,
+                data: palmShare,
             });
         }
     } catch (error: any) {
@@ -135,13 +147,13 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const palmShareId = parseFloat(req.params.id);
         const [updated] = await PalmShare.update(req.body, {
-            where: { id: userId },
+            where: { id: palmShareId },
         });
 
         if (updated > 0) {
-            const updatedUser = await PalmShare.findByPk(userId);
+            const updatedUser = await PalmShare.findByPk(palmShareId);
             res.json({
                 status: 'success',
                 message: 'PalmShare updated successfully',

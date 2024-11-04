@@ -7,6 +7,7 @@ import {
     DataType,
     AllowNull,
     ForeignKey,
+    BelongsTo,
 } from 'sequelize-typescript';
 import { User } from './User';
 
@@ -30,4 +31,10 @@ export class PalmShare extends Model<PalmShare> {
     @AllowNull(false)
     @Column(DataType.DECIMAL)
     max_amount!: number;
+
+    @BelongsTo(() => User, { foreignKey: 'owner_id', as: 'owner' })
+    owner!: User;
+
+    @BelongsTo(() => User, { foreignKey: 'allowed_user_id', as: 'allowedUser' })
+    allowedUser!: User;
 }
