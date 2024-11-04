@@ -3,22 +3,19 @@ import { Notification } from '../models/Notification';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await Notification.create({
+        const notification = await Notification.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'Notification created successfully',
-            data: user,
+            data: notification,
         });
     } catch (error: any) {
         res.status(500).json({
@@ -44,30 +41,27 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.like]: `%${q}%` } },
-                    { email: { [Op.like]: `%${q}%` } },
-                    { first_name: { [Op.like]: `%${q}%` } },
-                    { last_name: { [Op.like]: `%${q}%` } },
+                    { message: { [Op.like]: `%${q}%` } },
                 ],
             }
             : {};
   
-        const { rows: users, count: totalUsers } = await Notification.findAndCountAll({
+        const { rows: notifications, count: totalNotifications } = await Notification.findAndCountAll({
             where: whereClause,
             offset,
             limit: limitNumber,
         });
   
-        const totalPages = Math.ceil(totalUsers / limitNumber);
+        const totalPages = Math.ceil(totalNotifications / limitNumber);
   
-        if (!users.length) {
+        if (!notifications.length) {
             res.status(404).json({
                 status: 'failed',
                 message: 'No notifications found on this page',
                 data: {
-                    users: [],
+                    notifications: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalNotifications,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -79,9 +73,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'Notification retrieved successfully',
                 data: {
-                    users,
+                    notifications,
                     pagination: {
-                        total: totalUsers,
+                        total: totalNotifications,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -105,8 +99,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await Notification.findByPk(req.params.id);
-        if (!user) {
+        const notification = await Notification.findByPk(req.params.id);
+        if (!notification) {
             res.status(404).json({
                 status: 'failed',
                 message: 'Notification not found',
@@ -116,7 +110,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'Notification retrieved successfully',
-                data: user,
+                data: notification,
             });
         }
     } catch (error: any) {
@@ -135,13 +129,13 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const notificationId = parseFloat(req.params.id);
         const [updated] = await Notification.update(req.body, {
-            where: { id: userId },
+            where: { id: notificationId },
         });
 
         if (updated > 0) {
-            const updatedUser = await Notification.findByPk(userId);
+            const updatedUser = await Notification.findByPk(notificationId);
             res.json({
                 status: 'success',
                 message: 'Notification updated successfully',

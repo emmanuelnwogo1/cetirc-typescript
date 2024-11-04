@@ -10,13 +10,13 @@ const router = Router();
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await BusinessSmartLock.create({
+        const businessSmartLock = await BusinessSmartLock.create({
             ...req.body,
         });
         res.status(201).json({
             status: 'success',
             message: 'BusinessSmartLock created successfully',
-            data: user,
+            data: businessSmartLock,
         });
     } catch (error: any) {
         res.status(500).json({
@@ -107,8 +107,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await BusinessSmartLock.findByPk(req.params.id);
-        if (!user) {
+        const businessSmartLock = await BusinessSmartLock.findByPk(req.params.id);
+        if (!businessSmartLock) {
             res.status(404).json({
                 status: 'failed',
                 message: 'BusinessSmartLock not found',
@@ -118,7 +118,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'BusinessSmartLock retrieved successfully',
-                data: user,
+                data: businessSmartLock,
             });
         }
     } catch (error: any) {
@@ -137,13 +137,13 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const businessSmartLockId = parseFloat(req.params.id);
         const [updated] = await BusinessSmartLock.update(req.body, {
-            where: { id: userId },
+            where: { id: businessSmartLockId },
         });
 
         if (updated > 0) {
-            const updatedUser = await BusinessSmartLock.findByPk(userId);
+            const updatedUser = await BusinessSmartLock.findByPk(businessSmartLockId);
             res.json({
                 status: 'success',
                 message: 'BusinessSmartLock updated successfully',

@@ -3,31 +3,28 @@ import { Card } from '../models/Card';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await Card.create({
+        const card = await Card.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'Card created successfully',
-            data: user,
+            data: card,
         });
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to create card',
+            message: 'Failed to create card.',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
-                })) ?? `Error code: ${error.parent?.code}`,
+                })) ?? `Error code: ${error.parent?.detail}`,
             },
         });
     }
@@ -44,15 +41,12 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.like]: `%${q}%` } },
-                    { email: { [Op.like]: `%${q}%` } },
-                    { first_name: { [Op.like]: `%${q}%` } },
-                    { last_name: { [Op.like]: `%${q}%` } },
+                    { name: { [Op.like]: `%${q}%` } },
                 ],
             }
             : {};
   
-        const { rows: users, count: totalUsers } = await Card.findAndCountAll({
+        const { rows: cards, count: totalUsers } = await Card.findAndCountAll({
             where: whereClause,
             offset,
             limit: limitNumber,
@@ -60,12 +54,12 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
   
         const totalPages = Math.ceil(totalUsers / limitNumber);
   
-        if (!users.length) {
+        if (!cards.length) {
             res.status(404).json({
                 status: 'failed',
                 message: 'No cards found on this page',
                 data: {
-                    users: [],
+                    cards: [],
                     pagination: {
                         total: totalUsers,
                         page: pageNumber,
@@ -79,7 +73,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'Card retrieved successfully',
                 data: {
-                    users,
+                    cards,
                     pagination: {
                         total: totalUsers,
                         page: pageNumber,
@@ -105,8 +99,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await Card.findByPk(req.params.id);
-        if (!user) {
+        const card = await Card.findByPk(req.params.id);
+        if (!card) {
             res.status(404).json({
                 status: 'failed',
                 message: 'Card not found',
@@ -116,7 +110,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'Card retrieved successfully',
-                data: user,
+                data: card,
             });
         }
     } catch (error: any) {
@@ -135,13 +129,13 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const cardId = parseFloat(req.params.id);
         const [updated] = await Card.update(req.body, {
-            where: { id: userId },
+            where: { id: cardId },
         });
 
         if (updated > 0) {
-            const updatedUser = await Card.findByPk(userId);
+            const updatedUser = await Card.findByPk(cardId);
             res.json({
                 status: 'success',
                 message: 'Card updated successfully',
