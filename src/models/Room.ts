@@ -7,9 +7,11 @@ import {
     DataType,
     ForeignKey,
     AllowNull,
-    BelongsTo
+    BelongsTo,
+    HasMany
 } from 'sequelize-typescript';
 import { SmartLockGroup } from './SmartLockGroup';
+import { SmartLock } from './SmartLock';
 
 @Table({ tableName: 'image_processing_app_room', timestamps: false })
 export class Room extends Model<Room> {
@@ -37,4 +39,7 @@ export class Room extends Model<Room> {
 
     @BelongsTo(() => SmartLockGroup)
     smartLockGroup!: SmartLockGroup;
+
+    @HasMany(() => SmartLock)
+    smartLocks?: SmartLock[];
 }

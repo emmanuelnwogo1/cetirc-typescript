@@ -6,9 +6,11 @@ import {
     AutoIncrement,
     DataType,
     AllowNull,
-    ForeignKey
+    ForeignKey,
+    BelongsTo
 } from 'sequelize-typescript';
 import { SmartLockGroup } from './SmartLockGroup';
+import { Room } from './Room';
 
 @Table({ tableName: 'image_processing_app_smartlock', timestamps: false })
 export class SmartLock extends Model<SmartLock> {
@@ -35,6 +37,13 @@ export class SmartLock extends Model<SmartLock> {
     group_id?: number;
 
     @AllowNull(true)
+    @ForeignKey(() => Room)
     @Column(DataType.INTEGER)
     room_id?: number;
+
+    @BelongsTo(() => SmartLockGroup)
+    smartLockGroup?: SmartLockGroup;
+
+    @BelongsTo(() => Room)
+    room?: Room; 
 }

@@ -3,22 +3,21 @@ import { TransactionHistory } from '../models/TransactionHistory';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
+import { User } from '../models/User';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await TransactionHistory.create({
+
+        const transactionHistory = await TransactionHistory.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'TransactionHistory created successfully',
-            data: user,
+            data: transactionHistory,
         });
     } catch (error: any) {
         res.status(500).json({
@@ -44,30 +43,36 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.iLike]: `%${q}%` } },
-                    { email: { [Op.iLike]: `%${q}%` } },
-                    { first_name: { [Op.iLike]: `%${q}%` } },
-                    { last_name: { [Op.iLike]: `%${q}%` } },
+                    { '$user.first_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.last_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.email$': { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
   
-        const { rows: users, count: totalUsers } = await TransactionHistory.findAndCountAll({
+        const { rows: transactionHistorys, count: totalTransactionHistorys } = await TransactionHistory.findAndCountAll({
             where: whereClause,
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['first_name', 'last_name', 'email'],
+                },
+            ],
             offset,
             limit: limitNumber,
         });
   
-        const totalPages = Math.ceil(totalUsers / limitNumber);
+        const totalPages = Math.ceil(totalTransactionHistorys / limitNumber);
   
-        if (!users.length) {
+        if (!transactionHistorys.length) {
             res.status(404).json({
                 status: 'failed',
                 message: 'No transactionhistorys found on this page',
                 data: {
-                    users: [],
+                    transactionHistorys: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalTransactionHistorys,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -79,9 +84,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'TransactionHistory retrieved successfully',
                 data: {
-                    users,
+                    transactionHistorys,
                     pagination: {
-                        total: totalUsers,
+                        total: totalTransactionHistorys,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -105,8 +110,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await TransactionHistory.findByPk(req.params.id);
-        if (!user) {
+        const transactionHistory = await TransactionHistory.findByPk(req.params.id);
+        if (!transactionHistory) {
             res.status(404).json({
                 status: 'failed',
                 message: 'TransactionHistory not found',
@@ -116,7 +121,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'TransactionHistory retrieved successfully',
-                data: user,
+                data: transactionHistory,
             });
         }
     } catch (error: any) {
@@ -135,17 +140,17 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const transactionHistoryId = parseFloat(req.params.id);
         const [updated] = await TransactionHistory.update(req.body, {
-            where: { id: userId },
+            where: { id: transactionHistoryId },
         });
 
         if (updated > 0) {
-            const updatedUser = await TransactionHistory.findByPk(userId);
+            const updatedTransactionHistory = await TransactionHistory.findByPk(transactionHistoryId);
             res.json({
                 status: 'success',
                 message: 'TransactionHistory updated successfully',
-                data: updatedUser,
+                data: updatedTransactionHistory,
             });
         } else {
             res.status(404).json({

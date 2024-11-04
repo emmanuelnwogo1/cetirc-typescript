@@ -5,8 +5,10 @@ import {
     PrimaryKey,
     AutoIncrement,
     DataType,
-    AllowNull
+    AllowNull,
+    HasMany
 } from 'sequelize-typescript';
+import { SmartLock } from './SmartLock';
 
 export enum BusinessType {
     APARTMENT = 'apartment',
@@ -36,4 +38,7 @@ export class SmartLockGroup extends Model<SmartLockGroup> {
     description?: string;
     
     static BUSINESS_TYPES = Object.values(BusinessType);
+
+    @HasMany(() => SmartLock)
+    smartLocks?: SmartLock[];
 }

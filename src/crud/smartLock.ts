@@ -3,22 +3,21 @@ import { SmartLock } from '../models/SmartLock';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
+import { SmartLockGroup } from '../models/SmartLockGroup';
+import { Room } from '../models/Room';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await SmartLock.create({
+        const smartLock = await SmartLock.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'SmartLock created successfully',
-            data: user,
+            data: smartLock,
         });
     } catch (error: any) {
         res.status(500).json({
@@ -27,7 +26,7 @@ router.post('/', verifyToken, adminMiddleware, async (req, res) => {
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
-                })) ?? `Error code: ${error.parent?.code}`,
+                })) ?? `Error code: ${error.parent?.detail}`,
             },
         });
     }
@@ -36,38 +35,56 @@ router.post('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read all with optional search
 router.get('/', verifyToken, adminMiddleware, async (req, res) => {
     const { q, page = 1, limit = 10 } = req.query;
-    try {
-        const pageNumber = parseInt(page as string) || 1;
-        const limitNumber = parseInt(limit as string) || 10;
-        const offset = (pageNumber - 1) * limitNumber;
 
-        const whereClause = q
-            ? {
-                [Op.or]: [
-                    { username: { [Op.iLike]: `%${q}%` } },
-                    { email: { [Op.iLike]: `%${q}%` } },
-                    { first_name: { [Op.iLike]: `%${q}%` } },
-                    { last_name: { [Op.iLike]: `%${q}%` } },
-                ],
-            }
-            : {};
-  
-        const { rows: users, count: totalUsers } = await SmartLock.findAndCountAll({
+    const pageNumber = parseInt(page as string) || 1;
+    const limitNumber = parseInt(limit as string) || 10;
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const whereClause = q
+        ? {
+            [Op.or]: [
+                { name: { [Op.iLike]: `%${q}%` } },
+                {
+                    '$smartLockGroup.name$': { [Op.iLike]: `%${q}%` },
+                },
+                {
+                    '$room.name$': { [Op.iLike]: `%${q}%` },
+                },
+            ],
+        }
+        : {};
+
+    try {
+        const { rows: smartLocks, count: totalSmartLocks } = await SmartLock.findAndCountAll({
             where: whereClause,
+            include: [
+                {
+                    model: SmartLockGroup,
+                    as: 'smartLockGroup',
+                    required: false,
+                    attributes: ['name'],
+                },
+                {
+                    model: Room,
+                    as: 'room',
+                    required: false,
+                    attributes: ['name'],
+                },
+            ],
             offset,
             limit: limitNumber,
         });
-  
-        const totalPages = Math.ceil(totalUsers / limitNumber);
-  
-        if (!users.length) {
+
+        const totalPages = Math.ceil(totalSmartLocks / limitNumber);
+
+        if (!smartLocks.length) {
             res.status(404).json({
                 status: 'failed',
-                message: 'No smartlocks found on this page',
+                message: 'No smart locks found on this page',
                 data: {
-                    users: [],
+                    smartLocks: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalSmartLocks,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -77,11 +94,11 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         } else {
             res.json({
                 status: 'success',
-                message: 'SmartLock retrieved successfully',
+                message: 'SmartLocks retrieved successfully',
                 data: {
-                    users,
+                    smartLocks,
                     pagination: {
-                        total: totalUsers,
+                        total: totalSmartLocks,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -92,21 +109,22 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to retrieve smartlocks',
+            message: 'Failed to retrieve smart locks',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
-                })) ?? `Error code: ${error.parent?.code}`,
+                })) ?? `Error code: ${error.parent?.detail}`,
             },
         });
     }
 });
 
+
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await SmartLock.findByPk(req.params.id);
-        if (!user) {
+        const smartLock = await SmartLock.findByPk(req.params.id);
+        if (!smartLock) {
             res.status(404).json({
                 status: 'failed',
                 message: 'SmartLock not found',
@@ -116,7 +134,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'SmartLock retrieved successfully',
-                data: user,
+                data: smartLock,
             });
         }
     } catch (error: any) {
@@ -135,17 +153,17 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const smartLockId = parseFloat(req.params.id);
         const [updated] = await SmartLock.update(req.body, {
-            where: { id: userId },
+            where: { id: smartLockId },
         });
 
         if (updated > 0) {
-            const updatedUser = await SmartLock.findByPk(userId);
+            const updatedSmartLock = await SmartLock.findByPk(smartLockId);
             res.json({
                 status: 'success',
                 message: 'SmartLock updated successfully',
-                data: updatedUser,
+                data: updatedSmartLock,
             });
         } else {
             res.status(404).json({

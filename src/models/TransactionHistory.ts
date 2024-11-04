@@ -7,6 +7,7 @@ import {
     DataType,
     AllowNull,
     ForeignKey,
+    BelongsTo,
 } from 'sequelize-typescript';
 import { User } from './User';
 
@@ -25,4 +26,7 @@ export class TransactionHistory extends Model<TransactionHistory> {
     @AllowNull(false)
     @Column(DataType.BIGINT)
     user_id!: number;
+
+    @BelongsTo(() => User)
+    user!: User
 }
