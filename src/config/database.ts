@@ -14,6 +14,7 @@ import { BusinessSmartLock } from '../models/BusinessSmartLock';
 import { Room } from '../models/Room';
 import { Notification } from '../models/Notification';
 import { Permission } from '../models/Permission';
+import { Withdrawal } from '../models/Withdrawal';
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -25,7 +26,8 @@ const sequelize = new Sequelize({
   models: [User, BusinessProfile, BusinessDashboard, PalmShare, TransactionHistory,
         PasswordResetRequest, Card, UserProfile,
         SmartLock, SmartLockGroup, UserSmartLockAccess,
-        BusinessSmartLock, Room, Notification, Permission
+        BusinessSmartLock, Room, Notification, Permission,
+        Withdrawal
     ],
 });
 
