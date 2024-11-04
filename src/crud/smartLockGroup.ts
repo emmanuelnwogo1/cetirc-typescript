@@ -3,31 +3,31 @@ import { SmartLockGroup } from '../models/SmartLockGroup';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
+import { SmartLock } from '../models/SmartLock';
+import { UserSmartLockAccess } from '../models/UserSmartLockAccess';
+import { Room } from '../models/Room';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await SmartLockGroup.create({
+        const smartLockGroup = await SmartLockGroup.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'SmartLockGroup created successfully',
-            data: user,
+            data: smartLockGroup,
         });
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to create smartlockgroup',
+            message: 'Failed to create smart lock group.',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
-                })) ?? `Error code: ${error.parent?.code}`,
+                })) ?? `Error code: ${error.parent?.code}` ?? error.parent?.detail,
             },
         });
     }
@@ -44,30 +44,28 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.iLike]: `%${q}%` } },
-                    { email: { [Op.iLike]: `%${q}%` } },
-                    { first_name: { [Op.iLike]: `%${q}%` } },
-                    { last_name: { [Op.iLike]: `%${q}%` } },
+                    { name: { [Op.iLike]: `%${q}%` } },
+                    { description: { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
   
-        const { rows: users, count: totalUsers } = await SmartLockGroup.findAndCountAll({
+        const { rows: smartLockGroups, count: totalSmartLockGroups } = await SmartLockGroup.findAndCountAll({
             where: whereClause,
             offset,
             limit: limitNumber,
         });
   
-        const totalPages = Math.ceil(totalUsers / limitNumber);
+        const totalPages = Math.ceil(totalSmartLockGroups / limitNumber);
   
-        if (!users.length) {
+        if (!smartLockGroups.length) {
             res.status(404).json({
                 status: 'failed',
                 message: 'No smartlockgroups found on this page',
                 data: {
-                    users: [],
+                    smartLockGroups: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalSmartLockGroups,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -79,9 +77,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'SmartLockGroup retrieved successfully',
                 data: {
-                    users,
+                    smartLockGroups,
                     pagination: {
-                        total: totalUsers,
+                        total: totalSmartLockGroups,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -105,8 +103,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await SmartLockGroup.findByPk(req.params.id);
-        if (!user) {
+        const smartLockGroup = await SmartLockGroup.findByPk(req.params.id);
+        if (!smartLockGroup) {
             res.status(404).json({
                 status: 'failed',
                 message: 'SmartLockGroup not found',
@@ -116,7 +114,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'SmartLockGroup retrieved successfully',
-                data: user,
+                data: smartLockGroup,
             });
         }
     } catch (error: any) {
@@ -135,17 +133,17 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const smartLockGroupId = parseFloat(req.params.id);
         const [updated] = await SmartLockGroup.update(req.body, {
-            where: { id: userId },
+            where: { id: smartLockGroupId },
         });
 
         if (updated > 0) {
-            const updatedUser = await SmartLockGroup.findByPk(userId);
+            const updatedSmartLockGroup = await SmartLockGroup.findByPk(smartLockGroupId);
             res.json({
                 status: 'success',
                 message: 'SmartLockGroup updated successfully',
-                data: updatedUser,
+                data: updatedSmartLockGroup,
             });
         } else {
             res.status(404).json({
@@ -170,6 +168,36 @@ router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Delete
 router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
+
+        const smartLocks = await SmartLock.findAll({
+            where: {
+                group_id: req.params.id
+            }
+        });
+
+        if (smartLocks.length > 0) {
+            const smartLockIds = smartLocks.map(smartLock => smartLock.id);
+
+            await UserSmartLockAccess.destroy({
+                where: {
+                    smart_lock_id: {
+                        [Op.in]: smartLockIds
+                    }
+                }
+            });
+
+            for (const smartLock of smartLocks) {
+                await smartLock.destroy();
+            }
+        }
+
+        //delete rooms
+        await Room.destroy({
+            where: {
+                group_id: req.params.id
+            }
+        })
+
         const deleted = await SmartLockGroup.destroy({
             where: { id: req.params.id },
         });
@@ -194,7 +222,7 @@ router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
-                })) ?? `Error code: ${error.parent?.code}`,
+                })) ?? `Error code: ${error.parent?.detail}`,
             },
         });
     }

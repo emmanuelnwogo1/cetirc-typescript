@@ -55,4 +55,3 @@ import {
     @Column(DataType.DATE)
     date_joined!: Date;
 }
-  
