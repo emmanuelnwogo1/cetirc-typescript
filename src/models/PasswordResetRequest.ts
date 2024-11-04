@@ -7,6 +7,7 @@ import {
     DataType,
     AllowNull,
     ForeignKey,
+    BelongsTo,
 } from 'sequelize-typescript';
 import { User } from './User';
 
@@ -33,4 +34,7 @@ export class PasswordResetRequest extends Model<PasswordResetRequest> {
     @AllowNull(true)
     @Column(DataType.DATE)
     created_at!: Date;
+
+    @BelongsTo(() => User, { foreignKey: 'user_id', as: 'user' })
+    user!: User;
 }

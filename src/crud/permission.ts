@@ -1,28 +1,24 @@
 import { Router } from 'express';
-import { PasswordResetRequest } from '../models/PasswordResetRequest';
+import { Permission } from '../models/Permission';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import { User } from '../models/User';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-
-        const passwordResetRequest = await PasswordResetRequest.create({
-            ...req.body,
-        });
+        const permission = await Permission.create(req.body);
         res.status(201).json({
             status: 'success',
-            message: 'PasswordResetRequest created successfully',
-            data: passwordResetRequest,
+            message: 'Permission created successfully',
+            data: permission,
         });
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: error,
+            message: 'Failed to create permission',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
@@ -42,37 +38,26 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 
         const whereClause = q
             ? {
-                [Op.or]: [
-                    { '$user.email$': { [Op.like]: `%${q}%` } },
-                    { '$user.first_name$': { [Op.like]: `%${q}%` } },
-                    { '$user.last_name$': { [Op.like]: `%${q}%` } },
-                ],
+                name: { [Op.like]: `%${q}%` },
             }
             : {};
   
-        const { rows: passwordResetRequests, count: totalPasswordResetRequests } = await PasswordResetRequest.findAndCountAll({
+        const { rows: permissions, count: totalPermissions } = await Permission.findAndCountAll({
             where: whereClause,
-            include: [
-                {
-                    model: User,
-                    as: 'user',
-                    attributes: ['first_name', 'last_name', 'email'],
-                },
-            ],
             offset,
             limit: limitNumber,
         });
   
-        const totalPages = Math.ceil(totalPasswordResetRequests / limitNumber);
+        const totalPages = Math.ceil(totalPermissions / limitNumber);
   
-        if (!passwordResetRequests.length) {
+        if (!permissions.length) {
             res.status(404).json({
                 status: 'failed',
-                message: 'No passwordresetrequests found on this page',
+                message: 'No permissions found on this page',
                 data: {
-                    passwordResetRequests: [],
+                    permissions: [],
                     pagination: {
-                        total: totalPasswordResetRequests,
+                        total: totalPermissions,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -82,11 +67,11 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         } else {
             res.json({
                 status: 'success',
-                message: 'PasswordResetRequest retrieved successfully',
+                message: 'Permission retrieved successfully',
                 data: {
-                    passwordResetRequests,
+                    permissions,
                     pagination: {
-                        total: totalPasswordResetRequests,
+                        total: totalPermissions,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -97,7 +82,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: error,
+            message: 'Failed to retrieve permissions',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
@@ -110,24 +95,24 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const passwordResetRequest = await PasswordResetRequest.findByPk(req.params.id);
-        if (!passwordResetRequest) {
+        const permission = await Permission.findByPk(req.params.id);
+        if (!permission) {
             res.status(404).json({
                 status: 'failed',
-                message: 'PasswordResetRequest not found',
+                message: 'Permission not found',
                 data: null,
             });
         } else {
             res.json({
                 status: 'success',
-                message: 'PasswordResetRequest retrieved successfully',
-                data: passwordResetRequest,
+                message: 'Permission retrieved successfully',
+                data: permission,
             });
         }
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to retrieve passwordresetrequest',
+            message: 'Failed to retrieve permission',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
@@ -140,29 +125,29 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const passwordResetRequestId = parseFloat(req.params.id);
-        const [updated] = await PasswordResetRequest.update(req.body, {
-            where: { id: passwordResetRequestId },
+        const permissionId = parseFloat(req.params.id);
+        const [updated] = await Permission.update(req.body, {
+            where: { id: permissionId },
         });
 
         if (updated > 0) {
-            const updatedUser = await PasswordResetRequest.findByPk(passwordResetRequestId);
+            const updatedPermission = await Permission.findByPk(permissionId);
             res.json({
                 status: 'success',
-                message: 'PasswordResetRequest updated successfully',
-                data: updatedUser,
+                message: 'Permission updated successfully',
+                data: updatedPermission,
             });
         } else {
             res.status(404).json({
                 status: 'failed',
-                message: 'PasswordResetRequest not found',
+                message: 'Permission not found',
                 data: null,
             });
         }
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to update passwordresetrequest',
+            message: 'Failed to update permission',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
@@ -175,27 +160,27 @@ router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Delete
 router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const deleted = await PasswordResetRequest.destroy({
+        const deleted = await Permission.destroy({
             where: { id: req.params.id },
         });
 
         if (deleted) {
             res.status(200).json({
                 status: 'success',
-                message: 'PasswordResetRequest deleted successfully',
+                message: 'Permission deleted successfully',
                 data: null,
             });
         } else {
             res.status(404).json({
                 status: 'failed',
-                message: 'PasswordResetRequest not found',
+                message: 'Permission not found',
                 data: null,
             });
         }
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to delete passwordresetrequest',
+            message: 'Failed to delete permission',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
