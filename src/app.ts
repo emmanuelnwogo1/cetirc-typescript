@@ -18,6 +18,7 @@ import notificationRoutes from './routes/notificationRoutes';
 import roomRoutes from './routes/roomRoutes';
 import groupRoutes from './routes/groupRoutes';
 import withdrawCodeRoutes from './routes/withdrawCodeRoutes';
+import userCrudRoutes from './crud/user';
 
 const app = express();
 dotenv.config();
@@ -40,6 +41,9 @@ app.use('/api', roomRoutes);
 app.use('/api', notificationRoutes);
 app.use('/api', groupRoutes);
 app.use('/api', withdrawCodeRoutes);
+
+// crud routes
+app.use('/api/admin/users', userCrudRoutes);
 
 sequelize.sync();
 export default app;

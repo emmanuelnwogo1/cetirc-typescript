@@ -1,19 +1,12 @@
-import fs from 'fs';
-import path from 'path';
-
-const modelName = 'User'; // Change to your model name
-const modelFileName = modelName.charAt(0).toLowerCase() + modelName.slice(1);
-
-const crudTemplate = `
 import { Router } from 'express';
-import { ${modelName} } from '../models/${modelName}';
+import { BusinessProfile } from '../models/BusinessProfile';
 
 const router = Router();
 
 // Create
 router.post('/', async (req, res) => {
   try {
-    const user = await ${modelName}.create(req.body);
+    const user = await BusinessProfile.create(req.body);
     res.status(201).json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -23,7 +16,7 @@ router.post('/', async (req, res) => {
 // Read all
 router.get('/', async (req, res) => {
   try {
-    const users = await ${modelName}.findAll();
+    const users = await BusinessProfile.findAll();
     res.json(users);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -33,7 +26,7 @@ router.get('/', async (req, res) => {
 // Read one
 router.get('/:id', async (req, res) => {
   try {
-    const user = await ${modelName}.findByPk(req.params.id);
+    const user = await BusinessProfile.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -46,11 +39,11 @@ router.get('/:id', async (req, res) => {
 // Update
 router.put('/:id', async (req, res) => {
   try {
-    const [updated] = await ${modelName}.update(req.body, {
+    const [updated] = await BusinessProfile.update(req.body, {
       where: { id: req.params.id },
     });
     if (updated) {
-      const updatedUser = await ${modelName}.findByPk(req.params.id);
+      const updatedUser = await BusinessProfile.findByPk(req.params.id);
       return res.json(updatedUser);
     }
     throw new Error('User not found');
@@ -62,7 +55,7 @@ router.put('/:id', async (req, res) => {
 // Delete
 router.delete('/:id', async (req, res) => {
   try {
-    const deleted = await ${modelName}.destroy({
+    const deleted = await BusinessProfile.destroy({
       where: { id: req.params.id },
     });
     if (deleted) {
@@ -75,13 +68,3 @@ router.delete('/:id', async (req, res) => {
 });
 
 export default router;
-`;
-
-const controllerFilePath = path.join(__dirname, 'controllers', `${modelFileName}.ts`);
-const serviceFilePath = path.join(__dirname, 'services', `${modelFileName}.ts`);
-const routesFilePath = path.join(__dirname, 'routes', `${modelFileName}.ts`);
-
-// Write the CRUD route file
-fs.mkdirSync(path.join(__dirname, 'routes'), { recursive: true });
-fs.writeFileSync(routesFilePath, crudTemplate.trim(), { encoding: 'utf8' });
-console.log(`CRUD routes generated at: ${routesFilePath}`);
