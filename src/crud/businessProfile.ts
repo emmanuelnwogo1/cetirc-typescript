@@ -8,23 +8,23 @@ import { BusinessDashboard } from '../models/BusinessDashboard';
 const router = Router();
 
 // Create
-router.post('/', verifyToken, adminMiddleware, async (req, res) => {
+router.post('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
   try {
-    const businessprofile = await BusinessProfile.create(req.body);
-    res.status(201).json({
-      status: 'success',
-      message: 'BusinessProfile created successfully',
-      data: businessprofile,
-    });
+    const businessProfile = await BusinessProfile.create(req.body);
+        return res.status(201).json({
+            status: 'success',
+            message: 'BusinessProfile created successfully',
+            data: businessProfile,
+        });
   } catch (error: any) {
-    res.status(500).json({
-      status: 'failed',
-      message: 'Failed to create businessprofile',
-      data: {
-        errors: error.errors.map((err: any) => ({
-          message: err.message,
-        })),
-      },
+        return res.status(500).json({
+            status: 'failed',
+            message: 'Failed to create business profile.',
+            data: {
+                errors: error.errors?.map((err: any) => ({
+                message: err.message,
+                })) || error.detail,
+            },
     });
   }
 });
@@ -47,7 +47,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
           }
         : {};
   
-      const { rows: businessprofiles, count: totalBusinessProfiles } = await BusinessProfile.findAndCountAll({
+      const { rows: businessProfiles, count: totalBusinessProfiles } = await BusinessProfile.findAndCountAll({
         where: whereClause,
         offset,
         limit: limitNumber,
@@ -55,12 +55,12 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
   
       const totalPages = Math.ceil(totalBusinessProfiles / limitNumber);
   
-      if (!businessprofiles.length) {
+      if (!businessProfiles.length) {
         res.status(404).json({
           status: 'failed',
-          message: 'No businessprofiles found on this page',
+          message: 'No businessProfiles found on this page',
           data: {
-            businessprofiles: [],
+            businessProfiles: [],
             pagination: {
               total: totalBusinessProfiles,
               page: pageNumber,
@@ -74,7 +74,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
             status: 'success',
             message: 'BusinessProfiles retrieved successfully',
             data: {
-              businessprofiles,
+              businessProfiles,
               pagination: {
                 total: totalBusinessProfiles,
                 page: pageNumber,
@@ -87,7 +87,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
     } catch (error: any) {
       res.status(500).json({
         status: 'failed',
-        message: 'Failed to retrieve businessprofiles',
+        message: 'Failed to retrieve businessProfiles',
         data: {
             errors: error.errors.map((err: any) => ({
               message: err.message,
@@ -101,8 +101,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
   try {
-    const businessprofile = await BusinessProfile.findByPk(req.params.id);
-    if (!businessprofile) {
+    const businessProfile = await BusinessProfile.findByPk(req.params.id);
+    if (!businessProfile) {
       res.status(404).json({
         status: 'failed',
         message: 'BusinessProfile not found',
@@ -112,13 +112,13 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
       res.json({
         status: 'success',
         message: 'BusinessProfile retrieved successfully',
-        data: businessprofile,
+        data: businessProfile,
       });
     }
   } catch (error: any) {
     res.status(500).json({
       status: 'failed',
-      message: 'Failed to retrieve businessprofile',
+      message: 'Failed to retrieve businessProfile',
       data: {
         errors: error.errors.map((err: any) => ({
           message: err.message,
@@ -131,13 +131,13 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
   try {
-    const businessprofileId = parseFloat(req.params.id);
+    const businessProfileId = parseFloat(req.params.id);
     const [updated] = await BusinessProfile.update(req.body, {
-      where: { id: businessprofileId },
+      where: { id: businessProfileId },
     });
 
     if (updated > 0) {
-      const updatedBusinessProfile = await BusinessProfile.findByPk(businessprofileId);
+      const updatedBusinessProfile = await BusinessProfile.findByPk(businessProfileId);
       res.json({
         status: 'success',
         message: 'BusinessProfile updated successfully',
@@ -153,7 +153,7 @@ router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
   } catch (error: any) {
     res.status(500).json({
       status: 'failed',
-      message: 'Failed to update businessprofile',
+      message: 'Failed to update businessProfile',
       data: {
         errors: error.errors.map((err: any) => ({
           message: err.message,

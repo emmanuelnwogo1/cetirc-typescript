@@ -80,10 +80,6 @@ export class BusinessProfile extends Model<BusinessProfile> {
     iban?: string;
 
     @AllowNull(true)
-    @Column(DataType.BIGINT)
-    dashboard_id?: number;
-
-    @AllowNull(true)
     @Column(DataType.STRING(100))
     closing_hours?: string;
 
@@ -102,6 +98,8 @@ export class BusinessProfile extends Model<BusinessProfile> {
     @AllowNull(true)
     @Column(DataType.STRING(100))
     image?: string;
+
+    
 
     toJSON() {
         const attributes = { ...this.get() };

@@ -8,7 +8,10 @@ import {
     AllowNull,
     Unique,
     Default,
+    BelongsTo,
+    ForeignKey,
 } from 'sequelize-typescript';
+import { BusinessProfile } from './BusinessProfile';
 
 @Table({ tableName: 'image_processing_app_businessdashboard', timestamps: false })
 export class BusinessDashboard extends Model<BusinessDashboard> {
@@ -35,7 +38,11 @@ export class BusinessDashboard extends Model<BusinessDashboard> {
     withdraw_code?: string;
 
     @AllowNull(true)
+    @ForeignKey(() => BusinessProfile)
     @Unique
     @Column(DataType.BIGINT)
     business_id?: number;
+
+    @BelongsTo (() => BusinessProfile)
+    businessProfile!: BusinessProfile
 }

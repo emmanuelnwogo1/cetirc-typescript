@@ -3,25 +3,24 @@ import { BusinessDashboard } from '../models/BusinessDashboard';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
+import { BusinessProfile } from '../models/BusinessProfile';
+import { User } from '../models/User';
 
 const router = Router();
 
 // Create
-router.post('/', verifyToken, adminMiddleware, async (req, res) => {
+router.post('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
         const businessDashboard = await BusinessDashboard.create({
             ...req.body,
-            password: hashedPassword,
         });
-        res.status(201).json({
+        return res.status(201).json({
             status: 'success',
             message: 'BusinessDashboard created successfully',
             data: businessDashboard,
         });
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 'failed',
             message: 'Failed to create businessdashboard',
             data: {
@@ -44,16 +43,21 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { businessDashboardname: { [Op.iLike]: `%${q}%` } },
-                    { email: { [Op.iLike]: `%${q}%` } },
-                    { first_name: { [Op.iLike]: `%${q}%` } },
-                    { last_name: { [Op.iLike]: `%${q}%` } },
+                    { '$businessProfile.name$': { [Op.iLike]: `%${q}%` } },
+                    { '$businessProfile.email$': { [Op.iLike]: `%${q}%` } }
                 ],
             }
             : {};
   
         const { rows: businessDashboards, count: totalBusinessDashboards } = await BusinessDashboard.findAndCountAll({
             where: whereClause,
+            include: [
+                {
+                    model: BusinessProfile,
+                    as: 'businessProfile',
+                    attributes: ['name', 'email'],
+                }
+            ],
             offset,
             limit: limitNumber,
         });
