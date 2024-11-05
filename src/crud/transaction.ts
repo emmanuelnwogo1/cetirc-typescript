@@ -3,6 +3,7 @@ import { Transaction } from '../models/Transaction';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
+import { User } from '../models/User';
 
 const router = Router();
 
@@ -41,9 +42,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { '$transaction.email$': { [Op.iLike]: `%${q}%` } },
-                    { '$transaction.first_name$': { [Op.iLike]: `%${q}%` } },
-                    { '$transaction.last_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.email$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.first_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.last_name$': { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
@@ -52,8 +53,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
             where: whereClause,
             include: [
                 {
-                    model: Transaction,
-                    as: 'transaction',
+                    model: User,
+                    as: 'user',
                     required: false,
                     attributes: ['first_name', 'last_name', 'email'],
                 },
