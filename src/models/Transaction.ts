@@ -7,6 +7,7 @@ import {
     DataType,
     AllowNull,
     ForeignKey,
+    BelongsTo,
 } from 'sequelize-typescript';
 import { User } from './User';
 import { BusinessProfile } from './BusinessProfile';
@@ -24,7 +25,7 @@ export class Transaction extends Model<Transaction> {
 
     @AllowNull(false)
     @Column(DataType.DATE)
-    transactionDate!: Date;
+    transaction_date!: Date;
 
     @AllowNull(false)
     @Column(DataType.BOOLEAN)
@@ -44,4 +45,7 @@ export class Transaction extends Model<Transaction> {
     @AllowNull(false)
     @Column(DataType.INTEGER)
     user_id!: number;
+
+    @BelongsTo (() => User)
+    user!: User
 }

@@ -11,14 +11,14 @@ const router = Router();
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await BusinessDashboard.create({
+        const businessDashboard = await BusinessDashboard.create({
             ...req.body,
             password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'BusinessDashboard created successfully',
-            data: user,
+            data: businessDashboard,
         });
     } catch (error: any) {
         res.status(500).json({
@@ -44,7 +44,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.iLike]: `%${q}%` } },
+                    { businessDashboardname: { [Op.iLike]: `%${q}%` } },
                     { email: { [Op.iLike]: `%${q}%` } },
                     { first_name: { [Op.iLike]: `%${q}%` } },
                     { last_name: { [Op.iLike]: `%${q}%` } },
@@ -52,22 +52,22 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
             }
             : {};
   
-        const { rows: users, count: totalUsers } = await BusinessDashboard.findAndCountAll({
+        const { rows: businessDashboards, count: totalBusinessDashboards } = await BusinessDashboard.findAndCountAll({
             where: whereClause,
             offset,
             limit: limitNumber,
         });
   
-        const totalPages = Math.ceil(totalUsers / limitNumber);
+        const totalPages = Math.ceil(totalBusinessDashboards / limitNumber);
   
-        if (!users.length) {
+        if (!businessDashboards.length) {
             res.status(404).json({
                 status: 'failed',
                 message: 'No businessdashboards found on this page',
                 data: {
-                    users: [],
+                    businessDashboards: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalBusinessDashboards,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -79,9 +79,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'BusinessDashboard retrieved successfully',
                 data: {
-                    users,
+                    businessDashboards,
                     pagination: {
-                        total: totalUsers,
+                        total: totalBusinessDashboards,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -105,8 +105,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await BusinessDashboard.findByPk(req.params.id);
-        if (!user) {
+        const businessDashboard = await BusinessDashboard.findByPk(req.params.id);
+        if (!businessDashboard) {
             res.status(404).json({
                 status: 'failed',
                 message: 'BusinessDashboard not found',
@@ -116,7 +116,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'BusinessDashboard retrieved successfully',
-                data: user,
+                data: businessDashboard,
             });
         }
     } catch (error: any) {
@@ -135,17 +135,17 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const businessDashboardId = parseFloat(req.params.id);
         const [updated] = await BusinessDashboard.update(req.body, {
-            where: { id: userId },
+            where: { id: businessDashboardId },
         });
 
         if (updated > 0) {
-            const updatedUser = await BusinessDashboard.findByPk(userId);
+            const updatedBusinessDashboard = await BusinessDashboard.findByPk(businessDashboardId);
             res.json({
                 status: 'success',
                 message: 'BusinessDashboard updated successfully',
-                data: updatedUser,
+                data: updatedBusinessDashboard,
             });
         } else {
             res.status(404).json({

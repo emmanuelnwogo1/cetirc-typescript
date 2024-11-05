@@ -3,17 +3,15 @@ import { Transaction } from '../models/Transaction';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
+import { User } from '../models/User';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
         const user = await Transaction.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
@@ -23,14 +21,14 @@ router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to create transaction',
+            message: error,
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
                 })) ?? `Error code: ${error.parent?.code}`,
             },
         });
-    }
+    } 
 });
 
 // Read all with optional search
@@ -44,16 +42,23 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.iLike]: `%${q}%` } },
-                    { email: { [Op.iLike]: `%${q}%` } },
-                    { first_name: { [Op.iLike]: `%${q}%` } },
-                    { last_name: { [Op.iLike]: `%${q}%` } },
+                    { '$user.email$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.first_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.last_name$': { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
   
         const { rows: users, count: totalUsers } = await Transaction.findAndCountAll({
             where: whereClause,
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    required: false,
+                    attributes: ['first_name', 'last_name', 'email'],
+                },
+            ],
             offset,
             limit: limitNumber,
         });
