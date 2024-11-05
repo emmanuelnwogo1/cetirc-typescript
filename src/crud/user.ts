@@ -4,6 +4,9 @@ import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
 import bcrypt from 'bcrypt';
+import { BusinessProfile } from '../models/BusinessProfile';
+import { BusinessDashboard } from '../models/BusinessDashboard';
+import { UserProfile } from '../models/UserProfile';
 
 const router = Router();
 
@@ -168,33 +171,65 @@ router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
 });
 
 // Delete
-router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
+router.delete('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     try {
+
+        const businessProfile = await BusinessProfile.findOne({
+            where: {
+                user_id: req.params.id
+            }
+        })
+
+        const userProfile = await UserProfile.findOne({
+            where: {
+                username_id: req.params.id
+            }
+        })
+
+        if(businessProfile){
+
+            const businessDashboard = await BusinessDashboard.findOne({
+                where: {
+                    business_id: businessProfile.id
+                }
+            })
+
+            if(businessDashboard){
+                businessDashboard.destroy();
+            }
+
+            businessProfile.destroy();
+        }
+
+        if(userProfile){
+            userProfile.destroy();
+        }
+
         const deleted = await User.destroy({
             where: { id: req.params.id },
         });
 
         if (deleted) {
-            res.status(200).json({
+            return res.status(200).json({
                 status: 'success',
                 message: 'User deleted successfully',
                 data: null,
             });
         } else {
-            res.status(404).json({
+            return res.status(404).json({
                 status: 'failed',
                 message: 'User not found',
                 data: null,
             });
         }
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 'failed',
             message: 'Failed to delete user',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
-                })) ?? `Error code: ${error.parent?.code}`,
+                })) ?? `Error code: ${error.parent?.detail}`,
             },
         });
     }
