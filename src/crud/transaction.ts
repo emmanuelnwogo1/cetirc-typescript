@@ -3,20 +3,19 @@ import { Transaction } from '../models/Transaction';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import { User } from '../models/User';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await Transaction.create({
+        const transaction = await Transaction.create({
             ...req.body,
         });
         res.status(201).json({
             status: 'success',
             message: 'Transaction created successfully',
-            data: user,
+            data: transaction,
         });
     } catch (error: any) {
         res.status(500).json({
@@ -42,19 +41,19 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { '$user.email$': { [Op.iLike]: `%${q}%` } },
-                    { '$user.first_name$': { [Op.iLike]: `%${q}%` } },
-                    { '$user.last_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$transaction.email$': { [Op.iLike]: `%${q}%` } },
+                    { '$transaction.first_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$transaction.last_name$': { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
   
-        const { rows: users, count: totalUsers } = await Transaction.findAndCountAll({
+        const { rows: transactions, count: totalTransactions } = await Transaction.findAndCountAll({
             where: whereClause,
             include: [
                 {
-                    model: User,
-                    as: 'user',
+                    model: Transaction,
+                    as: 'transaction',
                     required: false,
                     attributes: ['first_name', 'last_name', 'email'],
                 },
@@ -63,16 +62,16 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
             limit: limitNumber,
         });
   
-        const totalPages = Math.ceil(totalUsers / limitNumber);
+        const totalPages = Math.ceil(totalTransactions / limitNumber);
   
-        if (!users.length) {
+        if (!transactions.length) {
             res.status(404).json({
                 status: 'failed',
                 message: 'No transactions found on this page',
                 data: {
-                    users: [],
+                    transactions: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalTransactions,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -84,9 +83,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'Transaction retrieved successfully',
                 data: {
-                    users,
+                    transactions,
                     pagination: {
-                        total: totalUsers,
+                        total: totalTransactions,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -110,8 +109,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await Transaction.findByPk(req.params.id);
-        if (!user) {
+        const transaction = await Transaction.findByPk(req.params.id);
+        if (!transaction) {
             res.status(404).json({
                 status: 'failed',
                 message: 'Transaction not found',
@@ -121,7 +120,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'Transaction retrieved successfully',
-                data: user,
+                data: transaction,
             });
         }
     } catch (error: any) {
@@ -140,17 +139,17 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const transactionId = parseFloat(req.params.id);
         const [updated] = await Transaction.update(req.body, {
-            where: { id: userId },
+            where: { id: transactionId },
         });
 
         if (updated > 0) {
-            const updatedUser = await Transaction.findByPk(userId);
+            const updatedTransaction = await Transaction.findByPk(transactionId);
             res.json({
                 status: 'success',
                 message: 'Transaction updated successfully',
-                data: updatedUser,
+                data: updatedTransaction,
             });
         } else {
             res.status(404).json({
