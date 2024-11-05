@@ -36,22 +36,22 @@ import {
     @Column(DataType.STRING)
     last_name?: string;
 
-    @AllowNull(false)
+    @AllowNull(true)
     @Default(false)
     @Column(DataType.BOOLEAN)
-    is_superuser!: boolean;
+    is_superuser?: boolean;
 
-    @AllowNull(false)
+    @AllowNull(true)
     @Default(false)
     @Column(DataType.BOOLEAN)
-    is_staff!: boolean;
+    is_staff?: boolean;
 
-    @AllowNull(false)
+    @AllowNull(true)
     @Default(false)
     @Column(DataType.BOOLEAN)
-    is_active!: boolean;
+    is_active?: boolean;
 
-    @AllowNull(false)
+    @AllowNull(true)
     @Column(DataType.DATE)
     date_joined!: Date;
 }

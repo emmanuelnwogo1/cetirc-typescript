@@ -3,27 +3,24 @@ import { UserSmartLockAccess } from '../models/UserSmartLockAccess';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
 
 const router = Router();
 
 // Create
 router.post('/', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        const user = await UserSmartLockAccess.create({
+        const userSmartLockAccess = await UserSmartLockAccess.create({
             ...req.body,
-            password: hashedPassword,
         });
         res.status(201).json({
             status: 'success',
             message: 'UserSmartLockAccess created successfully',
-            data: user,
+            data: userSmartLockAccess,
         });
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to create usersmartlockaccess',
+            message: 'Failed to create userSmartLockAccesssmartlockaccess',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
@@ -44,7 +41,6 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { username: { [Op.iLike]: `%${q}%` } },
                     { email: { [Op.iLike]: `%${q}%` } },
                     { first_name: { [Op.iLike]: `%${q}%` } },
                     { last_name: { [Op.iLike]: `%${q}%` } },
@@ -52,22 +48,22 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
             }
             : {};
   
-        const { rows: users, count: totalUsers } = await UserSmartLockAccess.findAndCountAll({
+        const { rows: userSmartLockAccesss, count: totalUserSmartLockAccesss } = await UserSmartLockAccess.findAndCountAll({
             where: whereClause,
             offset,
             limit: limitNumber,
         });
   
-        const totalPages = Math.ceil(totalUsers / limitNumber);
+        const totalPages = Math.ceil(totalUserSmartLockAccesss / limitNumber);
   
-        if (!users.length) {
+        if (!userSmartLockAccesss.length) {
             res.status(404).json({
                 status: 'failed',
-                message: 'No usersmartlockaccesss found on this page',
+                message: 'No userSmartLockAccesssmartlockaccesss found on this page',
                 data: {
-                    users: [],
+                    userSmartLockAccesss: [],
                     pagination: {
-                        total: totalUsers,
+                        total: totalUserSmartLockAccesss,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -79,9 +75,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 status: 'success',
                 message: 'UserSmartLockAccess retrieved successfully',
                 data: {
-                    users,
+                    userSmartLockAccesss,
                     pagination: {
-                        total: totalUsers,
+                        total: totalUserSmartLockAccesss,
                         page: pageNumber,
                         limit: limitNumber,
                         totalPages,
@@ -92,7 +88,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to retrieve usersmartlockaccesss',
+            message: 'Failed to retrieve userSmartLockAccesssmartlockaccesss',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
@@ -105,8 +101,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const user = await UserSmartLockAccess.findByPk(req.params.id);
-        if (!user) {
+        const userSmartLockAccess = await UserSmartLockAccess.findByPk(req.params.id);
+        if (!userSmartLockAccess) {
             res.status(404).json({
                 status: 'failed',
                 message: 'UserSmartLockAccess not found',
@@ -116,13 +112,13 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
             res.json({
                 status: 'success',
                 message: 'UserSmartLockAccess retrieved successfully',
-                data: user,
+                data: userSmartLockAccess,
             });
         }
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to retrieve usersmartlockaccess',
+            message: 'Failed to retrieve userSmartLockAccesssmartlockaccess',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
@@ -135,17 +131,17 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
-        const userId = parseFloat(req.params.id);
+        const userSmartLockAccessId = parseFloat(req.params.id);
         const [updated] = await UserSmartLockAccess.update(req.body, {
-            where: { id: userId },
+            where: { id: userSmartLockAccessId },
         });
 
         if (updated > 0) {
-            const updatedUser = await UserSmartLockAccess.findByPk(userId);
+            const updatedUserSmartLockAccess = await UserSmartLockAccess.findByPk(userSmartLockAccessId);
             res.json({
                 status: 'success',
                 message: 'UserSmartLockAccess updated successfully',
-                data: updatedUser,
+                data: updatedUserSmartLockAccess,
             });
         } else {
             res.status(404).json({
@@ -157,7 +153,7 @@ router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to update usersmartlockaccess',
+            message: 'Failed to update userSmartLockAccesssmartlockaccess',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,
@@ -190,7 +186,7 @@ router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
     } catch (error: any) {
         res.status(500).json({
             status: 'failed',
-            message: 'Failed to delete usersmartlockaccess',
+            message: 'Failed to delete userSmartLockAccesssmartlockaccess',
             data: {
                 errors: error.errors?.map((err: any) => ({
                     message: err.message,

@@ -11,7 +11,24 @@ import { UserProfile } from '../models/UserProfile';
 const router = Router();
 
 // Create
-router.post('/', verifyToken, adminMiddleware, async (req, res) => {
+router.post('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
+
+    const requiredFields: any = User.getAttributes();
+    const missingFields = Object.keys(requiredFields)
+        .filter((field) => requiredFields[field].allowNull === false && !req.body[field]);
+
+    if (missingFields.length > 0) {
+        return res.status(400).json({
+            status: 'failed',
+            message: 'Validation error',
+            data: {
+                errors: missingFields.map(field => ({
+                    message: `${field} is required`
+                }))
+            },
+        });
+    }
+
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         const user = await User.create({
