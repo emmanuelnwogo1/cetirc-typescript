@@ -30,23 +30,23 @@ router.post('/', verifyToken, adminMiddleware, async (req, res): Promise<any> =>
 });
 
 // Read all with optional search
-router.get('/', verifyToken, adminMiddleware, async (req, res) => {
+router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     const { q, page = 1, limit = 10 } = req.query;
-    try {
-        const pageNumber = parseInt(page as string) || 1;
-        const limitNumber = parseInt(limit as string) || 10;
-        const offset = (pageNumber - 1) * limitNumber;
+    const pageNumber = parseInt(page as string) || 1;
+    const limitNumber = parseInt(limit as string) || 10;
+    const offset = (pageNumber - 1) * limitNumber;
 
-        const whereClause = q
-            ? {
-                [Op.or]: [
-                    { '$user.first_name$': { [Op.iLike]: `%${q}%` } },
-                    { '$user.last_name$': { [Op.iLike]: `%${q}%` } },
-                    { email: { [Op.iLike]: `%${q}%` } },
-                ],
-            }
-            : {};
-  
+    const whereClause = q
+        ? {
+            [Op.or]: [
+                { '$user.first_name$': { [Op.iLike]: `%${q}%` } },
+                { '$user.last_name$': { [Op.iLike]: `%${q}%` } },
+                { email: { [Op.iLike]: `%${q}%` } },
+            ],
+        }
+        : {};
+
+    try {
         const { rows: userProfiles, count: totalUserProfiles } = await UserProfile.findAndCountAll({
             where: whereClause,
             include: [
@@ -59,11 +59,11 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
             offset,
             limit: limitNumber,
         });
-  
+
         const totalPages = Math.ceil(totalUserProfiles / limitNumber);
-  
+
         if (!userProfiles.length) {
-            res.status(200).json({
+            return res.status(200).json({
                 status: 'success',
                 message: 'No userprofiles found on this page',
                 data: {
@@ -77,11 +77,19 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 },
             });
         } else {
-            res.json({
+            const serverUrl = process.env.SERVER_URL;
+            const defaultImageUrl = process.env.PLACEHOLDER_IMAGE;
+
+            const users = userProfiles.map(function(userProfile){
+                userProfile.image = userProfile.image ? `${serverUrl}/api/${userProfile.image}` : defaultImageUrl;
+                return userProfile;
+            });
+
+            return res.json({
                 status: 'success',
                 message: 'UserProfile retrieved successfully',
                 data: {
-                    userProfiles,
+                    userProfiles: users,
                     pagination: {
                         total: totalUserProfiles,
                         page: pageNumber,
@@ -92,7 +100,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
             });
         }
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 'failed',
             message: 'Failed to retrieve userprofiles',
             data: {
@@ -104,25 +112,35 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
     }
 });
 
+
 // Read one
-router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
+router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     try {
-        const userProfile = await UserProfile.findByPk(req.params.id);
+        var userProfile = await UserProfile.findByPk(req.params.id);
         if (!userProfile) {
-            res.status(404).json({
+            return res.status(404).json({
                 status: 'failed',
                 message: 'UserProfile not found',
                 data: null,
             });
         } else {
-            res.json({
+
+            const serverUrl = process.env.SERVER_URL;
+            const defaultImageUrl = `${process.env.PLACEHOLDER_IMAGE}`;
+            userProfile = userProfile.toJSON();
+
+            userProfile.image = userProfile.image 
+            ? `${serverUrl}/api/${userProfile.image}` 
+            : defaultImageUrl;
+
+            return res.json({
                 status: 'success',
                 message: 'UserProfile retrieved successfully',
                 data: userProfile,
             });
         }
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 'failed',
             message: 'Failed to retrieve userprofile',
             data: {
