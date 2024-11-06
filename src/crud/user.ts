@@ -126,7 +126,9 @@ router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => 
 // Read one
 router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     try {
-        const user = await User.findByPk(req.params.id);
+        const user = await User.findByPk(req.params.id, {
+            attributes: { exclude: ['password'] },
+        });
 
         if (!user) {
             return res.status(404).json({
