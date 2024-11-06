@@ -3,6 +3,9 @@ import { UserSmartLockAccess } from '../models/UserSmartLockAccess';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
+import { SmartLock } from '../models/SmartLock';
+import { User } from '../models/User';
+import { Room } from '../models/Room';
 
 const router = Router();
 
@@ -41,15 +44,34 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const whereClause = q
             ? {
                 [Op.or]: [
-                    { email: { [Op.iLike]: `%${q}%` } },
-                    { first_name: { [Op.iLike]: `%${q}%` } },
-                    { last_name: { [Op.iLike]: `%${q}%` } },
+                    { '$user.first_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.last_name$': { [Op.iLike]: `%${q}%` } },
+                    { '$user.email$': { [Op.iLike]: `%${q}%` } },
+                    { '$smartLock.name$': { [Op.iLike]: `%${q}%` } },
+                    { '$room.name$': { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
   
         const { rows: userSmartLockAccesss, count: totalUserSmartLockAccesss } = await UserSmartLockAccess.findAndCountAll({
             where: whereClause,
+            include: [
+                {
+                    model: SmartLock,
+                    as: 'smartLock',
+                    attributes: ['name']
+                },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['first_name', 'last_name', 'email']
+                },
+                {
+                    model: Room,
+                    as: 'room',
+                    attributes: ['name']
+                }
+            ],
             offset,
             limit: limitNumber,
         });

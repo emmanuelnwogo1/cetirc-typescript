@@ -7,10 +7,12 @@ import {
     DataType,
     ForeignKey,
     AllowNull,
-    Default
+    Default,
+    BelongsTo
 } from 'sequelize-typescript';
 import { User } from './User';
 import { SmartLock } from './SmartLock';
+import { Room } from './Room';
 
 @Table({ tableName: 'image_processing_app_usersmartlockaccess', timestamps: false })
 export class UserSmartLockAccess extends Model<UserSmartLockAccess> {
@@ -44,6 +46,16 @@ export class UserSmartLockAccess extends Model<UserSmartLockAccess> {
     period?: Date;
 
     @AllowNull(true)
+    @ForeignKey(() => Room)
     @Column(DataType.INTEGER)
     room_id?: number;
+
+    @BelongsTo (() => SmartLock)
+    smartLock!: SmartLock
+
+    @BelongsTo (() => User)
+    user!: User
+
+    @BelongsTo (() => Room)
+    room!: Room
 }

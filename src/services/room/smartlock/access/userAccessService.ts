@@ -5,9 +5,8 @@ interface UpdateAccessData {
     room?: string;
 }
 
-export const updateUserAccess = async (userId: string, data: UpdateAccessData, currentUser: any) => {
+export const updateUserAccess = async (userId: string, data: any, currentUser: any) => {
     try {
-        console.log(userId, data, currentUser);
         const accessRecord = await UserSmartLockAccess.findOne({
             where: { user_id: userId, granted_by_id: currentUser.id },
         });

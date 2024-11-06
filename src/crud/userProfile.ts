@@ -8,18 +8,16 @@ import { User } from '../models/User';
 const router = Router();
 
 // Create
-router.post('/', verifyToken, adminMiddleware, async (req, res) => {
+router.post('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     try {
-        const userProfile = await UserProfile.create({
-            ...req.body,
-        });
-        res.status(201).json({
-            status: 'success',
-            message: 'UserProfile created successfully',
-            data: userProfile,
-        });
+        const userProfile = await UserProfile.create(req.body);
+        return res.status(201).json({
+                status: 'success',
+                message: 'UserProfile created successfully',
+                data: userProfile,
+            });
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 'failed',
             message: 'Failed to create userprofile',
             data: {

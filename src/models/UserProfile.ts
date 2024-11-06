@@ -7,12 +7,14 @@ import {
     AllowNull,
     BelongsTo,
     ForeignKey,
+    AutoIncrement,
 } from 'sequelize-typescript';
 import { User } from './User';
 
 @Table({ tableName: 'image_processing_app_userprofile', timestamps: false })
 export class UserProfile extends Model<UserProfile> {
     @PrimaryKey
+    @AutoIncrement
     @Column(DataType.INTEGER)
     id!: number;
 
