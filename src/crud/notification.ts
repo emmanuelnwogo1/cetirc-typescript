@@ -3,6 +3,7 @@ import { Notification } from '../models/Notification';
 import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
+import { User } from '../models/User';
 
 const router = Router();
 
@@ -42,12 +43,22 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
             ? {
                 [Op.or]: [
                     { message: { [Op.iLike]: `%${q}%` } },
+                    // { '$user.first_name$': { [Op.iLike]: `%${q}%` } },
+                    // { '$user.last_name$': { [Op.iLike]: `%${q}%` } },
+                    // { '$user.email$': { [Op.iLike]: `%${q}%` } },
                 ],
             }
             : {};
   
         const { rows: notifications, count: totalNotifications } = await Notification.findAndCountAll({
             where: whereClause,
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['first_name', 'last_name', 'email'],
+                }
+            ],
             offset,
             limit: limitNumber,
         });

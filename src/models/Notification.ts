@@ -7,6 +7,7 @@ import {
     DataType,
     AllowNull,
     ForeignKey,
+    BelongsTo,
 } from 'sequelize-typescript';
 import { User } from './User';
 
@@ -33,4 +34,7 @@ export class Notification extends Model<Notification> {
     @AllowNull(false)
     @Column(DataType.INTEGER)
     user_id!: number;
+
+    @BelongsTo (() => User)
+    user!: User
 }

@@ -4,6 +4,7 @@ import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
 import { BusinessProfile } from '../models/BusinessProfile';
+import { SmartLockGroup } from '../models/SmartLockGroup';
 
 const router = Router();
 
@@ -32,7 +33,7 @@ router.post('/', verifyToken, adminMiddleware, async (req, res) => {
 });
 
 // Read all with optional search
-router.get('/', verifyToken, adminMiddleware, async (req, res) => {
+router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     const { q, page = 1, limit = 10 } = req.query;
     try {
         const pageNumber = parseInt(page as string) || 1;
@@ -40,22 +41,30 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const offset = (pageNumber - 1) * limitNumber;
 
         const whereClause = q
-            ? {
-                name: {
-                    [Op.iLike]: `%${q}%`,
-                },
-            }
+            ?   {
+                    [Op.or]: [
+                        { '$businessProfile.name$': { [Op.iLike]: `%${q}%` } },
+                        { '$businessProfile.email$': { [Op.iLike]: `%${q}%` } },
+                        { '$businessType.name$': { [Op.iLike]: `%${q}%` } },
+                        { '$businessType.description$': { [Op.iLike]: `%${q}%` } },
+                    ]
+                }
             : {};
 
         const { rows: businessSmartLocks, count: totalBusinessSmartLocks } = await BusinessSmartLock.findAndCountAll({
-            where: {},
-            include: [{
-                model: BusinessProfile,
-                as: 'businessProfile',
-                attributes: ['name'],
-                required: true,
-                where: whereClause,
-            }],
+            where: whereClause,
+            include: [
+                {
+                    model: BusinessProfile,
+                    as: 'businessProfile',
+                    attributes: ['name'], 
+                },
+                {
+                    model: SmartLockGroup,
+                    as: 'businessType',
+                    attributes: ['name', 'description'],
+                }
+            ],
             offset,
             limit: limitNumber,
         });
@@ -63,7 +72,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalBusinessSmartLocks / limitNumber);
 
         if (!businessSmartLocks.length) {
-            res.status(404).json({
+            return res.status(404).json({
                 status: 'failed',
                 message: 'No business smart locks found on this page',
                 data: {
@@ -77,7 +86,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 },
             });
         } else {
-            res.json({
+            return res.json({
                 status: 'success',
                 message: 'Business smart locks retrieved successfully',
                 data: {
@@ -92,7 +101,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
             });
         }
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 'failed',
             message: error,
             data: {
