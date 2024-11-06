@@ -54,34 +54,35 @@ router.post('/', verifyToken, adminMiddleware, async (req, res): Promise<any> =>
 });
 
 // Read all with optional search
-router.get('/', verifyToken, adminMiddleware, async (req, res) => {
+router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     const { q, page = 1, limit = 10 } = req.query;
-    try {
-        const pageNumber = parseInt(page as string) || 1;
-        const limitNumber = parseInt(limit as string) || 10;
-        const offset = (pageNumber - 1) * limitNumber;
+    const pageNumber = parseInt(page as string) || 1;
+    const limitNumber = parseInt(limit as string) || 10;
+    const offset = (pageNumber - 1) * limitNumber;
 
-        const whereClause = q
-            ? {
-                [Op.or]: [
-                    { username: { [Op.iLike]: `%${q}%` } },
-                    { email: { [Op.iLike]: `%${q}%` } },
-                    { first_name: { [Op.iLike]: `%${q}%` } },
-                    { last_name: { [Op.iLike]: `%${q}%` } },
-                ],
-            }
-            : {};
-  
+    const whereClause = q
+        ? {
+            [Op.or]: [
+                { username: { [Op.iLike]: `%${q}%` } },
+                { email: { [Op.iLike]: `%${q}%` } },
+                { first_name: { [Op.iLike]: `%${q}%` } },
+                { last_name: { [Op.iLike]: `%${q}%` } },
+            ],
+        }
+        : {};
+
+    try {
         const { rows: users, count: totalUsers } = await User.findAndCountAll({
             where: whereClause,
+            attributes: { exclude: ['password'] },
             offset,
             limit: limitNumber,
         });
-  
+
         const totalPages = Math.ceil(totalUsers / limitNumber);
-  
+
         if (!users.length) {
-            res.status(404).json({
+            return res.status(404).json({
                 status: 'failed',
                 message: 'No users found on this page',
                 data: {
@@ -94,23 +95,23 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                     },
                 },
             });
-        } else {
-            res.json({
-                status: 'success',
-                message: 'User retrieved successfully',
-                data: {
-                    users,
-                    pagination: {
-                        total: totalUsers,
-                        page: pageNumber,
-                        limit: limitNumber,
-                        totalPages,
-                    },
-                },
-            });
         }
+
+        return res.json({
+            status: 'success',
+            message: 'Users retrieved successfully',
+            data: {
+                users,
+                pagination: {
+                    total: totalUsers,
+                    page: pageNumber,
+                    limit: limitNumber,
+                    totalPages,
+                },
+            },
+        });
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 'failed',
             message: 'Failed to retrieve users',
             data: {
@@ -123,24 +124,25 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
 });
 
 // Read one
-router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
+router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     try {
         const user = await User.findByPk(req.params.id);
+
         if (!user) {
-            res.status(404).json({
+            return res.status(404).json({
                 status: 'failed',
                 message: 'User not found',
                 data: null,
             });
-        } else {
-            res.json({
-                status: 'success',
-                message: 'User retrieved successfully',
-                data: user,
-            });
         }
+
+        return res.json({
+            status: 'success',
+            message: 'User retrieved successfully',
+            data: user,
+        });
     } catch (error: any) {
-        res.status(500).json({
+        return res.status(500).json({
             status: 'failed',
             message: 'Failed to retrieve user',
             data: {
@@ -156,12 +158,23 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {
     try {
         const userId = parseFloat(req.params.id);
-        const [updated] = await User.update(req.body, {
+        const updateData = { ...req.body };
+
+        if (req.body.password) {
+
+            updateData.password = await bcrypt.hash(req.body.password, 10);
+        }
+
+        const [updated] = await User.update(updateData, {
             where: { id: userId },
         });
 
         if (updated > 0) {
-            const updatedUser = await User.findByPk(userId);
+
+            const updatedUser = await User.findByPk(userId, {
+                attributes: { exclude: ['password'] },
+            });
+
             res.json({
                 status: 'success',
                 message: 'User updated successfully',
