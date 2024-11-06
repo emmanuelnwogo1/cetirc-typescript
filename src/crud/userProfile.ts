@@ -127,7 +127,6 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> 
 
             const serverUrl = process.env.SERVER_URL;
             const defaultImageUrl = `${process.env.PLACEHOLDER_IMAGE}`;
-            userProfile = userProfile.toJSON();
 
             userProfile.image = userProfile.image 
             ? `${serverUrl}/api/${userProfile.image}` 

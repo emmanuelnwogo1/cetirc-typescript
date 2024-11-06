@@ -70,11 +70,20 @@ router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => 
           },
         });
       }else{
+
+        const serverUrl = process.env.SERVER_URL;
+        const defaultImageUrl = process.env.PLACEHOLDER_IMAGE;
+
+        const businessProfilesUpdated = businessProfiles.map(function(businessProfile){
+            businessProfile.image = businessProfile.image ? `${serverUrl}/api/${businessProfile.image}` : defaultImageUrl;
+            return businessProfile;
+        });
+
         return res.json({
             status: 'success',
             message: 'BusinessProfiles retrieved successfully',
             data: {
-              businessProfiles,
+              businessProfiles: businessProfilesUpdated,
               pagination: {
                 total: totalBusinessProfiles,
                 page: pageNumber,
@@ -99,24 +108,31 @@ router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => 
   
 
 // Read one
-router.get('/:id', verifyToken, adminMiddleware, async (req, res) => {
+router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
   try {
-    const businessProfile = await BusinessProfile.findByPk(req.params.id);
+    var businessProfile = await BusinessProfile.findByPk(req.params.id);
     if (!businessProfile) {
-      res.status(404).json({
+      return res.status(404).json({
         status: 'failed',
         message: 'BusinessProfile not found',
         data: null,
       });
     } else {
-      res.json({
+        const serverUrl = process.env.SERVER_URL;
+            const defaultImageUrl = `${process.env.PLACEHOLDER_IMAGE}`;
+
+            businessProfile.image = businessProfile.image 
+            ? `${serverUrl}/api/${businessProfile.image}` 
+            : defaultImageUrl;
+
+      return res.json({
         status: 'success',
         message: 'BusinessProfile retrieved successfully',
         data: businessProfile,
       });
     }
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
       status: 'failed',
       message: 'Failed to retrieve businessProfile',
       data: {
