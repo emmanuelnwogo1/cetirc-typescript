@@ -59,8 +59,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalSmartLockGroups / limitNumber);
   
         if (!smartLockGroups.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No smartlockgroups found on this page',
                 data: {
                     smartLockGroups: [],

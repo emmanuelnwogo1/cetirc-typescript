@@ -63,8 +63,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalUserProfiles / limitNumber);
   
         if (!userProfiles.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No userprofiles found on this page',
                 data: {
                     userProfiles: [],

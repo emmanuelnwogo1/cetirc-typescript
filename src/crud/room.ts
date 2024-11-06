@@ -58,8 +58,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalRooms / limitNumber);
   
         if (!rooms.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No rooms found on this page',
                 data: {
                     rooms: [],

@@ -51,8 +51,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalWithdrawals / limitNumber);
   
         if (!withdrawals.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No withdrawals found on this page',
                 data: {
                     withdrawals: [],

@@ -82,8 +82,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => 
         const totalPages = Math.ceil(totalUsers / limitNumber);
 
         if (!users.length) {
-            return res.status(404).json({
-                status: 'failed',
+            return res.status(200).json({
+                status: 'success',
                 message: 'No users found on this page',
                 data: {
                     users: [],

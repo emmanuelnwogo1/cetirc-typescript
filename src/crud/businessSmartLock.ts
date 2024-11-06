@@ -72,8 +72,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => 
         const totalPages = Math.ceil(totalBusinessSmartLocks / limitNumber);
 
         if (!businessSmartLocks.length) {
-            return res.status(404).json({
-                status: 'failed',
+            return res.status(200).json({
+                status: 'success',
                 message: 'No business smart locks found on this page',
                 data: {
                     businessSmartLocks: [],

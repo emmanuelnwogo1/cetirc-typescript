@@ -79,8 +79,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalUserSmartLockAccesss / limitNumber);
   
         if (!userSmartLockAccesss.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No userSmartLockAccesssmartlockaccesss found on this page',
                 data: {
                     userSmartLockAccesss: [],

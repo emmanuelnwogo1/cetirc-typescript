@@ -66,8 +66,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalPasswordResetRequests / limitNumber);
   
         if (!passwordResetRequests.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No passwordresetrequests found on this page',
                 data: {
                     passwordResetRequests: [],

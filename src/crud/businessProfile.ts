@@ -30,7 +30,7 @@ router.post('/', verifyToken, adminMiddleware, async (req, res): Promise<any> =>
 });
 
 // Read all with optional search
-router.get('/', verifyToken, adminMiddleware, async (req, res) => {
+router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     const { q, page = 1, limit = 10 } = req.query;
     try{
         const pageNumber = parseInt(page as string) || 1;
@@ -56,8 +56,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
       const totalPages = Math.ceil(totalBusinessProfiles / limitNumber);
   
       if (!businessProfiles.length) {
-        res.status(404).json({
-          status: 'failed',
+        return res.json({
+          status: 'success',
           message: 'No businessProfiles found on this page',
           data: {
             businessProfiles: [],
@@ -70,7 +70,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
           },
         });
       }else{
-        res.json({
+        return res.json({
             status: 'success',
             message: 'BusinessProfiles retrieved successfully',
             data: {
@@ -85,7 +85,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         });
       }
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         status: 'failed',
         message: 'Failed to retrieve businessProfiles',
         data: {

@@ -55,8 +55,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalUsers / limitNumber);
   
         if (!cards.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No cards found on this page',
                 data: {
                     cards: [],

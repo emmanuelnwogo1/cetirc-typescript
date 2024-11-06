@@ -66,8 +66,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalNotifications / limitNumber);
   
         if (!notifications.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No notifications found on this page',
                 data: {
                     notifications: [],

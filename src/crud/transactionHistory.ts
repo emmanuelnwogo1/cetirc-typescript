@@ -66,8 +66,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalTransactionHistorys / limitNumber);
   
         if (!transactionHistorys.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No transactionhistorys found on this page',
                 data: {
                     transactionHistorys: [],

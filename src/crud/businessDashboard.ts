@@ -33,7 +33,7 @@ router.post('/', verifyToken, adminMiddleware, async (req, res): Promise<any> =>
 });
 
 // Read all with optional search
-router.get('/', verifyToken, adminMiddleware, async (req, res) => {
+router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     const { q, page = 1, limit = 10 } = req.query;
     try {
         const pageNumber = parseInt(page as string) || 1;
@@ -65,8 +65,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalBusinessDashboards / limitNumber);
   
         if (!businessDashboards.length) {
-            res.status(404).json({
-                status: 'failed',
+            return res.json({
+                status: 'success',
                 message: 'No businessdashboards found on this page',
                 data: {
                     businessDashboards: [],
@@ -79,7 +79,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
                 },
             });
         } else {
-            res.json({
+            return res.json({
                 status: 'success',
                 message: 'BusinessDashboard retrieved successfully',
                 data: {

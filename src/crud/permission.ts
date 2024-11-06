@@ -51,8 +51,8 @@ router.get('/', verifyToken, adminMiddleware, async (req, res) => {
         const totalPages = Math.ceil(totalPermissions / limitNumber);
   
         if (!permissions.length) {
-            res.status(404).json({
-                status: 'failed',
+            res.status(200).json({
+                status: 'success',
                 message: 'No permissions found on this page',
                 data: {
                     permissions: [],
