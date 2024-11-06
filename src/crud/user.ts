@@ -75,13 +75,35 @@ router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => 
         const { rows: users, count: totalUsers } = await User.findAndCountAll({
             where: whereClause,
             attributes: { exclude: ['password'] },
+            include: [
+                {
+                    model: UserProfile,
+                    attributes: ['image'],
+                }
+            ],
             offset,
             limit: limitNumber,
         });
 
+        const serverUrl = process.env.SERVER_URL;
+        const defaultImageUrl = process.env.PLACEHOLDER_IMAGE;
+
+        const usersWithFullImageUrl = users.map(user => {
+            const imageUrl = user.userProfile?.image
+                ? `${serverUrl}/api/${user.userProfile.image}`
+                : defaultImageUrl;
+            return {
+                ...user.toJSON(),
+                userProfile: {
+                    ...user.userProfile,
+                    image: imageUrl,
+                },
+            };
+        });
+
         const totalPages = Math.ceil(totalUsers / limitNumber);
 
-        if (!users.length) {
+        if (!usersWithFullImageUrl.length) {
             return res.status(200).json({
                 status: 'success',
                 message: 'No users found on this page',
@@ -101,7 +123,7 @@ router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => 
             status: 'success',
             message: 'Users retrieved successfully',
             data: {
-                users,
+                users: usersWithFullImageUrl,
                 pagination: {
                     total: totalUsers,
                     page: pageNumber,
@@ -123,11 +145,20 @@ router.get('/', verifyToken, adminMiddleware, async (req, res): Promise<any> => 
     }
 });
 
-// Read one
+
 router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> => {
     try {
+        const serverUrl = process.env.SERVER_URL;
+        const defaultImageUrl = `${process.env.PLACEHOLDER_IMAGE}`;
+
         const user = await User.findByPk(req.params.id, {
             attributes: { exclude: ['password'] },
+            include: [
+                {
+                    model: UserProfile,
+                    attributes: ['image'],
+                }
+            ]
         });
 
         if (!user) {
@@ -138,10 +169,15 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> 
             });
         }
 
+        const userData = user.toJSON();
+        userData.userProfile.image = userData.userProfile?.image 
+            ? `${serverUrl}/api/${userData.userProfile.image}` 
+            : defaultImageUrl;
+
         return res.json({
             status: 'success',
             message: 'User retrieved successfully',
-            data: user,
+            data: userData,
         });
     } catch (error: any) {
         return res.status(500).json({
@@ -155,6 +191,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> 
         });
     }
 });
+
 
 // Update
 router.put('/:id', verifyToken, adminMiddleware, async (req, res) => {

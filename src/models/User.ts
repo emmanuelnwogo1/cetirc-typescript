@@ -7,7 +7,9 @@ import {
     DataType,
     AllowNull,
     Default,
+    HasOne,
   } from 'sequelize-typescript';
+import { UserProfile } from './UserProfile';
   
   @Table({ tableName: 'auth_user', timestamps: false })
   export class User extends Model<User> {
@@ -54,4 +56,7 @@ import {
     @AllowNull(true)
     @Column(DataType.DATE)
     date_joined!: Date;
+
+    @HasOne (() => UserProfile)
+    userProfile!: UserProfile
 }

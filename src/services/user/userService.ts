@@ -75,7 +75,6 @@ export const updateUserProfilePhoto = async (userId: number, image: Express.Mult
                 data: {},
             };
         }
-        console.log(image.path)
 
         const imageBuffer = await fs.promises.readFile(image.path);
 
