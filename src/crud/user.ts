@@ -169,15 +169,16 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> 
             });
         }
 
-        const userData = user.toJSON();
-        userData.userProfile.image = userData.userProfile?.image 
-            ? `${serverUrl}/api/${userData.userProfile.image}` 
-            : defaultImageUrl;
+        if (user?.userProfile) {
+            user.userProfile.image = user.userProfile.image
+              ? `${serverUrl}/api/${user.userProfile.image}`
+              : defaultImageUrl;
+          }
 
         return res.json({
             status: 'success',
             message: 'User retrieved successfully',
-            data: userData,
+            data: user,
         });
     } catch (error: any) {
         return res.status(500).json({
