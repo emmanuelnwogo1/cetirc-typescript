@@ -35,6 +35,7 @@ export class AuthService {
           phoneNumber: 'Not Provided',
           userType: 'personal', // TODO make profile picture dynamic
           profilePicture: 'https://cetircstorage.s3.amazonaws.com/profile_images/scaled_1000025451.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA6GBMFUGOQN4ATMD4%2F20241031%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20241031T045614Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=5f3760236199835aaf4fab494fa83159b723003281090b6a87ef90a176642a66',
+          image: 'https://cetircstorage.s3.amazonaws.com/profile_images/scaled_1000025451.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA6GBMFUGOQN4ATMD4%2F20241031%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20241031T045614Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=5f3760236199835aaf4fab494fa83159b723003281090b6a87ef90a176642a66',
           token,
           roles: ['user'],
           preferences: {
