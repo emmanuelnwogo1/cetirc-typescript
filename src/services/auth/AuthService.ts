@@ -3,10 +3,20 @@ import jwt from 'jsonwebtoken';
 import bcrypt, { compare } from 'bcrypt';
 import { Op } from 'sequelize';
 import { BusinessProfile } from '../../models/BusinessProfile';
+import { UserProfile } from '../../models/UserProfile';
 
 export class AuthService {
   async loginUser(email: string, password: string) {
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ 
+        where: { email },
+        include: [
+            {
+                model: UserProfile,
+                as: 'userProfile',
+                attributes: ['email', 'image']
+            }
+        ]
+    });
 
     if (!user) {
       throw new Error('User not found');
@@ -23,6 +33,15 @@ export class AuthService {
       { expiresIn: '24h' }
     );
 
+    const serverUrl = process.env.SERVER_URL;
+    const defaultImageUrl = `${process.env.PLACEHOLDER_IMAGE}`;
+
+    if (user.userProfile) {
+        user.userProfile.image = user.userProfile.image
+          ? `${serverUrl}/api/${user.userProfile.image}`
+          : defaultImageUrl;
+    }
+
     return {
       status: 'success',
       message: 'Login successful',
@@ -33,9 +52,8 @@ export class AuthService {
           fullName: user.first_name! + user.last_name!,
           email: user.email,
           phoneNumber: 'Not Provided',
-          userType: 'personal', // TODO make profile picture dynamic
+          userType: 'personal',
           profilePicture: 'https://cetircstorage.s3.amazonaws.com/profile_images/scaled_1000025451.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA6GBMFUGOQN4ATMD4%2F20241031%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20241031T045614Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=5f3760236199835aaf4fab494fa83159b723003281090b6a87ef90a176642a66',
-          image: 'https://cetircstorage.s3.amazonaws.com/profile_images/scaled_1000025451.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA6GBMFUGOQN4ATMD4%2F20241031%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20241031T045614Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=5f3760236199835aaf4fab494fa83159b723003281090b6a87ef90a176642a66',
           token,
           roles: ['user'],
           preferences: {
@@ -44,6 +62,10 @@ export class AuthService {
               email: true,
               sms: false,
             },
+          },
+          userProfile: {
+            email: user.userProfile?.email,
+            image: user.userProfile?.image,
           },
         },
       },

@@ -173,7 +173,7 @@ router.get('/:id', verifyToken, adminMiddleware, async (req, res): Promise<any> 
             user.userProfile.image = user.userProfile.image
               ? `${serverUrl}/api/${user.userProfile.image}`
               : defaultImageUrl;
-          }
+        }
 
         return res.json({
             status: 'success',
