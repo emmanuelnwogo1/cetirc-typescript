@@ -4,6 +4,9 @@ import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
 import { BusinessDashboard } from '../models/BusinessDashboard';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
 
@@ -218,5 +221,69 @@ router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
       });
     }
 });
+
+const upload = multer({ dest: 'business_images/' });
+
+router.patch(
+  '/:id/image',
+  verifyToken,
+  adminMiddleware,
+  upload.single('image'),
+  async (req, res): Promise<any> => {
+
+    try {
+      const image = req.file;
+      const businessId = parseInt(req.params.id);
+
+      if (!image || !image.path || !businessId) {
+        return res.status(400).json({
+          status: 'failed',
+          message: 'No image or business ID provided.',
+          data: null,
+        });
+      }
+
+      const imageBuffer = await fs.promises.readFile(image.path);
+
+      const profile = await BusinessProfile.findOne({
+        where: { id: businessId },
+      });
+
+      if (!profile) {
+        return res.status(404).json({
+          status: 'failed',
+          message: 'BusinessProfile not found',
+          data: null,
+        });
+      }
+
+      const fileExtension = path.extname(image.originalname) || '.png';
+      const timestamp = new Date().toISOString().replace(/:/g, '-').slice(0, 19);
+      const imageName = `image_${timestamp}${fileExtension}`;
+      const imagePath = path.join(__dirname, '../../business_images/', imageName);
+
+      await fs.promises.writeFile(imagePath, imageBuffer);
+
+      const serverUrl = process.env.SERVER_URL;
+      const fullImageUrl = `${serverUrl}/api/business_images/${imageName}`;
+
+      profile.image = `business_images/${imageName}`;
+      await profile.save();
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Business profile photo updated successfully.',
+        data: { image_url: fullImageUrl },
+      });
+      
+    } catch (error: any) {
+      return res.status(500).json({
+        status: 'failed',
+        message: 'An error occurred while updating the business profile photo.',
+        data: { error: error.message || 'Unknown error' },
+      });
+    }
+  }
+);
 
 export default router;

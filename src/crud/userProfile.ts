@@ -4,6 +4,9 @@ import verifyToken from '../middlewares/authMiddleware';
 import adminMiddleware from '../middlewares/adminMiddleware';
 import { Op } from 'sequelize';
 import { User } from '../models/User';
+import multer from 'multer';
+import path from "path";
+import fs from 'fs';
 
 const router = Router();
 
@@ -215,6 +218,62 @@ router.delete('/:id', verifyToken, adminMiddleware, async (req, res) => {
                     message: err.message,
                 })) ?? `Error code: ${error.parent?.code}`,
             },
+        });
+    }
+});
+
+const upload = multer({ dest: 'images/' });
+router.patch('/:id/image', verifyToken, adminMiddleware, upload.single('image'), async (req, res): Promise<any> => {
+
+    try {
+        const image = req.file;
+        const userId = parseInt(req.params.id)
+
+        if (!image || !image.path || !userId) {
+            return res.status(404).json({
+                status: 'failed',
+                message: 'No image or user provided.',
+                data: null,
+            });
+        }
+
+        const imageBuffer = await fs.promises.readFile(image.path);
+
+        let profile = await UserProfile.findOne({
+            where: { id: userId },
+        });
+
+        if (!profile) {
+            return res.status(404).json({
+                status: 'failed',
+                message: 'UserProfile not found',
+                data: null,
+            });
+        }
+
+        const fileExtension = path.extname(image.originalname) || '.png';
+        const timestamp = new Date().toISOString().replace(/:/g, '-').slice(0, 19);
+        const imageName = `image_${timestamp}${fileExtension}`;
+        const imagePath = path.join(__dirname, '../../images/', imageName);
+
+        await fs.promises.writeFile(imagePath, imageBuffer);
+
+        const serverUrl = process.env.SERVER_URL;
+        const fullImageUrl = `${serverUrl}/api/images/${imageName}`;
+
+        profile.image = `images/${imageName}`;
+        await profile.save();
+
+        return res.status(200).json({
+            status: 'success',
+            message: 'Profile photo updated successfully.',
+            data: { image_url: fullImageUrl },
+        });
+    } catch (error: any) {
+        return res.status(500).json({
+            status: 'failed',
+            message: 'An error occurred while updating the profile photo.',
+            data: { error: error.message || 'Unknown error' },
         });
     }
 });

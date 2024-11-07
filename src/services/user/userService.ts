@@ -141,5 +141,9 @@ export const createUser = async (userData: any) => {
 };
   
 export const deleteUser = async (id: string) => {
-    //return await User.findByIdAndDelete(id);
+    return await User.destroy({
+        where: {
+            id: parseInt(id)
+        }
+    });
 };
