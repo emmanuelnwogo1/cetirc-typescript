@@ -20,7 +20,7 @@ export class TransactionHistory extends Model<TransactionHistory> {
 
     @AllowNull(false)
     @Column(DataType.BIGINT)
-    transaction_id!: string;
+    transaction_id!: number;
 
     @ForeignKey(() => User)
     @AllowNull(false)

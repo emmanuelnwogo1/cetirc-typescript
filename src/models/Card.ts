@@ -27,7 +27,7 @@ export class Card extends Model<Card> {
 
     @AllowNull(false)
     @Column(DataType.INTEGER)
-    expiration_month_year!: number;
+    expiration_month_year!: string;
 
     @AllowNull(false)
     @Length({ min: 3, max: 3 })

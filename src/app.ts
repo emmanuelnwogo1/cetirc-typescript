@@ -3,6 +3,7 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import authRoutes from './routes/authRoutes';
 import sequelize from './config/database';
 import businessRoutes from './routes/businessRoutes';
@@ -18,7 +19,7 @@ import notificationRoutes from './routes/notificationRoutes';
 import roomRoutes from './routes/roomRoutes';
 import groupRoutes from './routes/groupRoutes';
 import withdrawCodeRoutes from './routes/withdrawCodeRoutes';
-import fs from 'fs';
+import businessPaymentRoutes from './routes/businessPaymentRoutes';
 
 const app = express();
 dotenv.config();
@@ -41,6 +42,7 @@ app.use('/api', roomRoutes);
 app.use('/api', notificationRoutes);
 app.use('/api', groupRoutes);
 app.use('/api', withdrawCodeRoutes);
+app.use('/api', businessPaymentRoutes);
 
 // crud routes
 const crudDir = path.join(__dirname, './crud');
