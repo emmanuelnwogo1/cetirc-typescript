@@ -23,7 +23,6 @@ export const processPayment = async (user_id: number, stripePaymentMethodId: str
             });
         }
 
-
         const paymentIntent = await stripe.paymentIntents.create({
             amount: Math.round(amount * 100),
             currency: 'usd',

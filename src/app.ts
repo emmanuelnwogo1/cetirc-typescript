@@ -44,6 +44,10 @@ app.use('/api', groupRoutes);
 app.use('/api', withdrawCodeRoutes);
 app.use('/api', businessPaymentRoutes);
 
+app.get('/api/stripe/card-form', (req, res) => {
+    res.sendFile(path.join(__dirname, 'assets/stripe/card_form.html'));
+});
+
 // crud routes
 const crudDir = path.join(__dirname, './crud');
 fs.readdirSync(crudDir).forEach((file: any) => {

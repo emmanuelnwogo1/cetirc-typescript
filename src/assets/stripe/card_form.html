@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Card</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .form-wrapper {
+      width: 400px;
+      text-align: center;
+    }
+
+    #payment-form {
+        margin: 0 auto;
+      width: 90%;
+    }
+
+    .StripeElement {
+      padding: 10px;
+      border: 1px solid #555;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #submit, #cancel {
+      padding: 10px;
+      background-color: #222;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #submit {
+        display: block;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    #cancel {
+        display: block;
+        width: 100%;
+      margin-top: 10px;
+      background-color: white;
+      color: #555;
+      border: 1px solid #555;
+    }
+
+    .secure-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #555;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    .secure-container h2 {
+      margin-bottom: 5px;
+    }
+
+    .secure-text {
+      margin: 0;
+      margin-bottom: 50px;
+      text-align: center;
+    }
+
+    .secure-container img {
+      margin-top: 18px;
+      height: 20px;
+    }
+
+    .card-logos {
+      margin: 0;
+    }
+
+    .card-logos img {
+      width: 100%;
+      max-width: 250px;
+      height: 170px;
+      margin: 0 auto;
+    }
+
+    form {
+      display: block;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      color: #000;
+      margin-bottom: 5px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-wrapper">
+    <div class="secure-container">
+      <h2>Secured by </h2>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1024px-Stripe_Logo%2C_revised_2016.svg.png" alt="Stripe Logo">
+    </div>
+    <p class="secure-text">We do not process or store your card information. Your card data does not touch our servers, it is handled directly by Stripe. We will only store an encrypted token that Stripe will provide.</p>
+
+    <form id="payment-form">
+      <label for="card-number">Card Number</label>
+      <div id="card-number" class="StripeElement"></div>
+
+      <label for="card-expiry">Expiration Date</label>
+      <div id="card-expiry" class="StripeElement"></div>
+
+      <label for="card-cvc">CVC</label>
+      <div id="card-cvc" class="StripeElement"></div>
+
+      <label for="postal-code">Postal Code</label>
+      <div id="postal-code" class="StripeElement"></div>
+
+      <button id="submit" type="button">Add Card</button>
+      <button id="cancel" type="button">Cancel</button>
+    </form>
+  </div>
+
+  <script>
+    const stripe = Stripe('pk_test_51PDH8BHSAfLK2YPFOrQj2AQRh68SsbDtSnDIDP4UgZgfuJmw9Gxue47VeWvoLrsFvB4CHCml0vDuHoCxgyg3ec2q00ovVA2GZS');
+    const elements = stripe.elements();
+
+    const style = {
+      base: {
+        colorTextSecondary: "#555",
+        fontSize: '16px',
+        color: "#32325d",
+        '::placeholder': {
+          color: '#999',
+        },
+      },
+      invalid: {
+        color: '#fa755a',
+      },
+    };
+
+    const cardNumberElement = elements.create('cardNumber', { style });
+    const cardExpiryElement = elements.create('cardExpiry', { style });
+    const cardCvcElement = elements.create('cardCvc', { style });
+    const postalCodeElement = elements.create('postalCode', { style });
+
+    cardNumberElement.mount('#card-number');
+    cardExpiryElement.mount('#card-expiry');
+    cardCvcElement.mount('#card-cvc');
+    postalCodeElement.mount('#postal-code');
+
+    document.getElementById('submit').addEventListener('click', async () => {
+      const {error, token} = await stripe.createToken(cardNumberElement);
+
+      if (error) {
+        window.StripeChannel.postMessage(error.message);
+      } else {
+        window.StripeChannel.postMessage(token.id);
+      }
+    });
+
+    document.getElementById('cancel').addEventListener('click', () => {
+      alert('Process canceled');
+    });
+  </script>
+</body>
+</html>
