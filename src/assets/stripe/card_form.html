@@ -151,6 +151,11 @@
         color: '#fa755a',
       },
     };
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('update') === 'true') {
+        document.getElementById('submit').innerText = 'Update Card';
+    }
   
     const cardNumberElement = elements.create('cardNumber', { style });
     const cardExpiryElement = elements.create('cardExpiry', { style });
