@@ -138,10 +138,9 @@
   <script>
     const stripe = Stripe('pk_test_51PDH8BHSAfLK2YPFOrQj2AQRh68SsbDtSnDIDP4UgZgfuJmw9Gxue47VeWvoLrsFvB4CHCml0vDuHoCxgyg3ec2q00ovVA2GZS');
     const elements = stripe.elements();
-
+  
     const style = {
       base: {
-        colorTextSecondary: "#555",
         fontSize: '16px',
         color: "#32325d",
         '::placeholder': {
@@ -152,30 +151,41 @@
         color: '#fa755a',
       },
     };
-
+  
     const cardNumberElement = elements.create('cardNumber', { style });
     const cardExpiryElement = elements.create('cardExpiry', { style });
     const cardCvcElement = elements.create('cardCvc', { style });
     const postalCodeElement = elements.create('postalCode', { style });
-
+  
     cardNumberElement.mount('#card-number');
     cardExpiryElement.mount('#card-expiry');
     cardCvcElement.mount('#card-cvc');
     postalCodeElement.mount('#postal-code');
-
+  
     document.getElementById('submit').addEventListener('click', async () => {
       const {error, token} = await stripe.createToken(cardNumberElement);
-
+  
       if (error) {
         window.StripeChannel.postMessage(error.message);
       } else {
-        window.StripeChannel.postMessage(token.id);
+        const cardBrand = token.card.brand;
+        const last4Digits = token.card.last4;
+  
+        window.StripeChannel.postMessage(JSON.stringify({
+            submit: true,
+            token: token.id,
+            cardBrand: cardBrand,
+            last4Digits: last4Digits
+        }));
       }
     });
-
+  
     document.getElementById('cancel').addEventListener('click', () => {
-      alert('Process canceled');
+        window.StripeChannel.postMessage(JSON.stringify({
+            cancel: true
+        }));
     });
   </script>
+  
 </body>
 </html>

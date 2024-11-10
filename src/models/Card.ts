@@ -17,24 +17,20 @@ export class Card extends Model<Card> {
     id!: number;
 
     @AllowNull(false)
-    @Column(DataType.STRING)
-    name!: string;
-
-    @AllowNull(false)
-    @Length({ min: 16, max: 16 })
-    @Column(DataType.STRING(16))
-    card_number!: string;
-
-    @AllowNull(false)
-    @Column(DataType.INTEGER)
-    expiration_month_year!: string;
-
-    @AllowNull(false)
-    @Length({ min: 3, max: 3 })
-    @Column(DataType.STRING(3))
-    cvv!: string;
-
-    @AllowNull(false)
     @Column(DataType.INTEGER)
     user_profile_id!: number;
+
+    @AllowNull(false)
+    @Length({ max: 255 })
+    @Column(DataType.STRING)
+    token!: string;
+
+    @AllowNull(false)
+    @Length({ max: 50 })
+    @Column(DataType.STRING)
+    brand!: string;
+
+    @AllowNull(false)
+    @Column(DataType.STRING(4))
+    last_four_digits!: string;
 }

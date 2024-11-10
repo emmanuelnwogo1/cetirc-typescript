@@ -60,21 +60,12 @@ export class CardService {
                 };
             }
     
-            // Fetch cards associated with the user profile
             const cards = await Card.findAll({ where: { user_profile_id: userId } });
-    
-            const cardData = cards.map(card => ({
-                id: card.id,
-                name: card.name,
-                card_number: card.card_number,
-                expiration_month_year: card.expiration_month_year,
-                cvv: card.cvv
-            }));
     
             return {
                 status: "success",
                 message: "Cards retrieved successfully.",
-                data: cardData
+                data: cards
             };
         } catch (error) {
             return {

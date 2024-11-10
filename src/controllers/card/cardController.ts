@@ -8,8 +8,10 @@ export class CardController {
     async addCard(req: Request, res: Response) {
         const user = await User.findOne(req.user.id);
         const cardData = req.body;
+        console.log("card data");
+        console.log(cardData);
 
-        try {
+        //try {
             const newCard = await cardService.addCard(user, cardData);
 
             res.status(201).json({
@@ -17,20 +19,20 @@ export class CardController {
                 message: 'Card added successfully.',
                 data: newCard
             });
-        } catch (error: any) {
-            res.status(400).json({
-                status: 'failed',
-                message: 'Failed to add card.',
-                data: error.message
-            });
-        }
+        // } catch (error: any) {
+        //     res.status(400).json({
+        //         status: 'failed',
+        //         message: 'Failed to add card.',
+        //         data: error.message
+        //     });
+        // }
     }
 
     editCard = async (req: Request, res: Response) => {
         const cardId = parseInt(req.params.id);
         const userId = req.user.id;
         const data = req.body;
-        console.log(userId);
+        console.log(data);
     
         const result = await cardService.updateCard(cardId, data, userId);
     
