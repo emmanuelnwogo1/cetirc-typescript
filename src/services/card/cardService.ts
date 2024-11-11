@@ -49,7 +49,7 @@ export class CardService {
 
     getUserCards = async (userId: number) => {
         try {
-            const userProfile = await UserProfile.findOne({ where: { id: userId } });
+            const userProfile = await UserProfile.findOne({ where: {  username_id: userId } });
     
             if (!userProfile) {
                 return {
