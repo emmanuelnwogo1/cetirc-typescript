@@ -51,6 +51,10 @@ export class UserProfile extends Model<UserProfile> {
     @Column(DataType.STRING)
     zip_code?: string;
 
+    @AllowNull(true)
+    @Column(DataType.STRING)
+    stripe_customer_id?: string;
+
     @BelongsTo(() => User)
     user!: User;
 }

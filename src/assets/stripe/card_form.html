@@ -138,7 +138,12 @@
     postalCodeElement.mount('#postal-code');
   
     document.getElementById('submit').addEventListener('click', async () => {
-      const {error, token} = await stripe.createToken(cardNumberElement);
+        const {error, token} = await stripe.createToken(cardNumberElement);
+
+        const {errorPaymentMethod, paymentMethod} = await stripe.createPaymentMethod({
+            type: 'card',
+            card: cardNumberElement,
+        });
   
       if (error) {
         window.StripeChannel.postMessage(error.message);
@@ -148,7 +153,7 @@
   
         window.StripeChannel.postMessage(JSON.stringify({
             submit: true,
-            token: token.id,
+            token: paymentMethod.id,
             cardBrand: cardBrand,
             last4Digits: last4Digits
         }));

@@ -33,4 +33,8 @@ export class Card extends Model<Card> {
     @AllowNull(false)
     @Column(DataType.STRING(4))
     last_four_digits!: string;
+
+    @AllowNull(true)
+    @Column(DataType.BOOLEAN)
+    is_default?: boolean;
 }

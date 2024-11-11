@@ -27,13 +27,13 @@ export const requestPaymentController = async (req: Request, res: Response): Pro
             status: result.status
           }
         });
-      } else {
-        return res.status(500).json({
-          status: "failed",
-          message: result.error || "Failed to create payment request.",
-          data: {}
-        });
       }
+
+      return res.status(500).json({
+        status: "failed",
+        message: result.error || "Failed to create payment request.",
+        data: {}
+      });
     } catch (error: any) {
       return res.status(500).json({
         status: "failed",
@@ -45,9 +45,9 @@ export const requestPaymentController = async (req: Request, res: Response): Pro
 
 export const processPaymentController = async (req: Request, res: Response): Promise<any> => {
     try {
-      const { user_id, stripe_payment_method_id, amount, transaction_id } = req.body;
+      const { user_id, amount, transaction_id } = req.body;
   
-      if (!user_id || !stripe_payment_method_id || !amount) {
+      if (!user_id || !amount) {
         return res.status(400).json({
           status: "failed",
           message: "User ID, payment method, and amount are required.",
@@ -55,12 +55,12 @@ export const processPaymentController = async (req: Request, res: Response): Pro
         });
       }
   
-      const data = await processPayment(user_id, stripe_payment_method_id, amount, transaction_id);
+      const data = await processPayment(user_id, amount, transaction_id);
       if(data.status === 'success'){
         return res.status(200).json(data);
-      }else{
-        return res.status(200).json(data);
       }
+
+      return res.status(200).json(data);
     } catch (error: any) {
       return res.status(500).json({
         status: "failed",
