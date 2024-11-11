@@ -60,31 +60,6 @@
       border: 1px solid #555;
     }
 
-    .secure-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      color: #555;
-      margin-top: 20px;
-      justify-content: center;
-    }
-
-    .secure-container h2 {
-      margin-bottom: 5px;
-    }
-
-    .secure-text {
-      margin: 0;
-      margin-bottom: 50px;
-      text-align: center;
-    }
-
-    .secure-container img {
-      margin-top: 18px;
-      height: 20px;
-    }
-
     .card-logos {
       margin: 0;
     }
@@ -111,12 +86,7 @@
 </head>
 <body>
   <div class="form-wrapper">
-    <div class="secure-container">
-      <h2>Secured by </h2>
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1024px-Stripe_Logo%2C_revised_2016.svg.png" alt="Stripe Logo">
-    </div>
-    <p class="secure-text">We do not process or store your card information. Your card data does not touch our servers, it is handled directly by Stripe. We will only store an encrypted token that Stripe will provide.</p>
-
+    
     <form id="payment-form">
       <label for="card-number">Card Number</label>
       <div id="card-number" class="StripeElement"></div>

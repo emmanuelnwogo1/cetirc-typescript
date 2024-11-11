@@ -1,11 +1,10 @@
 import { Card } from '../../models/Card';
-import { User } from '../../models/User';
 import { UserProfile } from '../../models/UserProfile';
 
 export class CardService {
     async addCard(user: any, cardData: any) {
         
-        const userProfile = await User.findOne({ where: { username: user.username } });
+        const userProfile = await UserProfile.findOne({ where: { username_id: user.id } });
         if (!userProfile) {
             throw new Error('User profile not found');
         }
@@ -22,7 +21,7 @@ export class CardService {
     updateCard = async (cardId: number, data: any, userId: number) => {
         try {
             const card = await Card.findOne({
-                where: { id: cardId, user_profile_id: userId }
+                where: { id: cardId }
             });
     
             if (!card) {

@@ -30,7 +30,7 @@ export class CardController {
         const cardId = parseInt(req.params.id);
         const userId = req.user.id;
         const data = req.body;
-        console.log(data);
+        console.log(data, cardId, userId);
     
         const result = await cardService.updateCard(cardId, data, userId);
     
