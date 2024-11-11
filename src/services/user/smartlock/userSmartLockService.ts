@@ -10,7 +10,11 @@ class UserSmartLockService {
         
         const smartLock = await SmartLock.findOne({ where: { device_id: deviceId } });
         if (!smartLock) {
-            throw new Error('Smart lock not found.');
+            return {
+                status: 'failed',
+                message: 'Smart lock not found.',
+                data: {}
+            };
         }
 
         var smartLockGroup = await SmartLockGroup.findOne({ where: { name: groupName } });

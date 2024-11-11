@@ -6,7 +6,12 @@ const cardService = new CardService();
 
 export class CardController {
     async addCard(req: Request, res: Response): Promise<any> {
-        const user = await User.findOne(req.user.id);
+        const user = await User.findOne({
+            where: {
+                id: req.user.id
+            }
+        });
+        console.log(req.user.id, user);
         const cardData = req.body;
 
         try {

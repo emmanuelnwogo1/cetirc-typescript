@@ -3,7 +3,7 @@ import { UserProfile } from '../../models/UserProfile';
 
 export class CardService {
     async addCard(user: any, cardData: any) {
-        
+        console.log(user.id);
         const userProfile = await UserProfile.findOne({ where: { username_id: user.id } });
         if (!userProfile) {
             return {
