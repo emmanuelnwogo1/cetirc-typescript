@@ -67,7 +67,7 @@ export class CardService {
                 };
             }
     
-            const cards = await Card.findAll({ where: { user_profile_id: userId } });
+            const cards = await Card.findAll({ where: { user_profile_id: userProfile.id } });
     
             return {
                 status: "success",
