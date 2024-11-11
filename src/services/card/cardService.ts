@@ -6,7 +6,11 @@ export class CardService {
         
         const userProfile = await UserProfile.findOne({ where: { username_id: user.id } });
         if (!userProfile) {
-            throw new Error('User profile not found');
+            return {
+                status: "failed",
+                message: "User profile not found.",
+                data: {}
+            };
         }
 
         // Create the card
@@ -15,7 +19,11 @@ export class CardService {
             user_profile_id: userProfile.id,
         });
 
-        return newCard;
+        return {
+            status: "success",
+            message: "Card added successfully.",
+            data: newCard
+        };
     }
 
     updateCard = async (cardId: number, data: any, userId: number) => {

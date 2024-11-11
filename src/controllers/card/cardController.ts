@@ -5,20 +5,28 @@ import { User } from '../../models/User';
 const cardService = new CardService();
 
 export class CardController {
-    async addCard(req: Request, res: Response) {
+    async addCard(req: Request, res: Response): Promise<any> {
         const user = await User.findOne(req.user.id);
         const cardData = req.body;
 
         try {
-            const newCard = await cardService.addCard(user, cardData);
+            const response: any = await cardService.addCard(user, cardData);
 
-            res.status(201).json({
-                status: 'success',
-                message: 'Card added successfully.',
-                data: newCard
-            });
+            if(response.status == 'success'){
+                return res.status(201).json({
+                    status: 'success',
+                    message: 'Card added successfully.',
+                    data: response.data
+                });
+            }else{
+                return res.status(404).json({
+                    status: 'failed',
+                    message: 'User profile not found.',
+                    data: {}
+                });
+            }            
         } catch (error: any) {
-            res.status(400).json({
+            return res.status(400).json({
                 status: 'failed',
                 message: 'Failed to add card.',
                 data: error.message
