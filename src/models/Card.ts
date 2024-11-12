@@ -20,10 +20,9 @@ export class Card extends Model<Card> {
     @Column(DataType.INTEGER)
     user_profile_id!: number;
 
-    @AllowNull(false)
-    @Length({ max: 255 })
+    @AllowNull(true)
     @Column(DataType.STRING)
-    token!: string;
+    stripe_payment_method_id?: string;
 
     @AllowNull(false)
     @Length({ max: 50 })

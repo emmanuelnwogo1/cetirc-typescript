@@ -45,7 +45,7 @@ export const processPayment = async (user_id: number, amount: number, transactio
             };
         }
 
-        const paymentMethodId = card.token;
+        const paymentMethodId = card.stripe_payment_method_id;
 
         if (!paymentMethodId) {
             return {

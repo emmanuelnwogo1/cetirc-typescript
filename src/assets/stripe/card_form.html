@@ -153,7 +153,7 @@
   
         window.StripeChannel.postMessage(JSON.stringify({
             submit: true,
-            token: paymentMethod.id,
+            stripe_payment_method_id: paymentMethod.id,
             cardBrand: cardBrand,
             last4Digits: last4Digits
         }));
